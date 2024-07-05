@@ -1,0 +1,8 @@
+---
+title: Ethnic Enclaves and the Legacy of Internment
+authors:
+  - name: Dante Yasui
+    affiliation: The University of Oregon
+---
+
+{{< include sections/Data.qmd >}}

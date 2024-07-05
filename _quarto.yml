@@ -1,0 +1,27 @@
+project:
+  type: manuscript
+  execute-dir: project
+
+bibliography: bibliography.bib
+
+manuscript:
+  article: main.qmd
+
+format:
+  html:
+    comments:
+      hypothesis: true
+  pdf: 
+    documentclass: article
+    link-citations: true
+    pdf-engine: latexmk
+    keep-tex: false
+    geometry: 
+      - left=1in
+      - right=1in
+      
+execute:
+  freeze: true
+
+
+
