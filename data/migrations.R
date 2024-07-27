@@ -3,7 +3,7 @@ library(labelled)
 library(ipumsr)
 
 # Read from downloaded file
-ipumsmicro_df <- read_ipums_micro("data/census/usa_00067.xml") %>% 
+ipumsmicro_df <- read_ipums_micro("data/census/usa_00079.xml") %>% 
   filter(COUNTYICP != 0) %>% # subset with location identified
   mutate( IsMigrant = ((MIGRATE5 %in% c(2,3,4)) | (MIGRATE1 %in% c(2,3,4))) ) 
 
@@ -17,10 +17,11 @@ migrations_race <- ipumsmicro_df %>%
   summarise(
     pop      = sum(PERWT), 
     mig      = sum(IsMigrant * PERWT),
+    migratio = mig/pop,
     ) %>% 
   ungroup() %>% 
   mutate(RACE = to_factor(RACE)) %>% 
-  pivot_wider(names_from = RACE, values_from = c( pop, mig ) ) %>% 
+  pivot_wider(names_from = RACE, values_from = c( pop, mig, migratio ) ) %>% 
   # assuming that if there is no-one in sub-sample, pop is zero 
   mutate_all( ~replace(., is.na(.), 0))
   
@@ -31,11 +32,15 @@ migrations_county <- ipumsmicro_df %>%
   summarise(
     pop_total      = sum(PERWT), 
     mig_total      = sum(IsMigrant * PERWT),
+    migratio_total = pop_total / mig_total
     ) %>% 
   ungroup() 
 
 migrations_df <-
-  left_join(migrations_county, migrations_race, by = c("YEAR", "STATEFIP", "COUNTYICP"))
+  left_join(
+    migrations_county, migrations_race,
+    by = c("YEAR", "STATEFIP", "COUNTYICP")
+    ) 
 
 write_csv(migrations_df, file = "./data/migrations.csv")
 

@@ -1,0 +1,17 @@
+```{r}
+library(tidyverse)
+
+```
+
+```{r}
+countyyr_df <- read_csv("data/migrations_crosswalked.csv")
+```
+
+```{r}
+countyyr_df %>% 
+  group_by(Year) %>% 
+  summarise(
+    across(starts_with('mig'), ~ mean(., na.rm = TRUE))
+  )
+```
+

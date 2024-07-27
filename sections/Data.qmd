@@ -2,14 +2,56 @@
 name: data
 ---
 
+```{r data-packages}
+library(tidytable)
+library(ipumsr)
+library(labelled)
+library(geos)
+library(data.table)
+```
+
 ## Population and Migration
+
+```{r download-ipums, eval=FALSE}
+# NOTE: to be able to download data via the IPUMS API,
+# use `set_ipums_api_key()` with API key from https://account.ipums.org/api_keys
+# to be able to use the submit_extract pipeline below to query ipums servers
+#
+# Read more with:
+# vignette("ipums-api")
+#------------------------------------------------------------------------------#
+# select census samples for ipums API -----
+migration_samples <- get_sample_info("usa") %>%
+  filter(str_detect(description, 
+        '1940 1%|1950 1%|1960 5%|1970 Form 2 Metro|1980 1%|1990 1%')) %>%
+  select(name) %>% pull()
+
+# select variables -----
+variables <- list(
+  "YEAR"     , "PERWT"    , 
+  "STATEFIP" , "STATEICP" , "COUNTYICP" , "METAREA"  , "CITY"     , 
+  "MIGRATE5" , "MIGPLAC5" , "MIGRATE1"  , "MIGPLAC1" ,
+  "RACE"     , "BPL"      ,  "AGE"       , "SEX" ,
+  "EMPSTAT"  , "LABFORCE" , "INCWAGE"   , "INCTOT"   , "OCCSCORE" 
+  )
+
+# pipeline to create and download data extract using ipumsr -----
+define_extract_usa(description = "census migration data for years 1940 through 1990",
+                     samples = migration_samples,
+                     variables = variables) %>%
+  submit_extract() %>%
+  # use is_extract_ready() if you want to avoid R session from being occupied
+  wait_for_extract() %>%
+  download_extract(download_dir = "data/census")
+```
+
 
 For long-run migration data,
 I use the Decennial Census data provided by the US Census Bureau via the 
 [Integrated Public Use Microdata Series](https://usa.ipums.org/usa/index.shtml) [@ruggles_steven_ipums_2020].
 The census samples for which county locations are available include the 
 1940, 1950, 1980, and 1990 1% samples, the 1960 5% sample,
-and the 1970 Form 1 Metro 1% sample.
+and the 1970 Form 2 Metro 1% sample.
 
 For the calculation of migration rates between counties, 
 I define a migrant as someone who reports that they either
@@ -21,14 +63,66 @@ didn't report their previous location, or the location is unknown.
 
 ## Geography
 
-Locations for historical interment camp locations were archived by 
-[Densho Encyclopedia](http://encyclopedia.densho.org/War_Relocation_Authority/#Planning_the_Camps)
-and downloaded in csv form via the 
-[Behind Barbed Wires story project](https://www.arcgis.com/home/item.html?id=69183af8d45d4f46a9dc4eba99440891).
+### Historical County Borders
+```{r download-nhgis, eval=F }
+county1990_shp_name <- get_metadata_nhgis("shapefiles") %>%
+  filter(year == 1990,
+         geographic_level == 'County',
+         str_detect( basis, '^2008' )) %>% # 2008 TIGER/Lines basis
+  select(name) %>% pull()
+
+define_extract_nhgis(
+    description = "NHGIS shapefile for 1990 county boundaries",
+    shapefiles = "us_county_1990_tl2008" ) %>%
+    submit_extract() %>%
+    wait_for_extract() %>%
+    download_extract(download_dir = "./data/maps/")
+```
+
+```{r county-shapefile }
+county1990_shp <- read_ipums_sf("data/maps/nhgis0018_shape/nhgis0018_shapefile_tl2008_us_county_1990.zip") %>% 
+  as.data.table() %>% 
+  filter(STATENAM %notin% c('Alaska', 'Hawaii')) %>% 
+  # need an extra zero to go from STATEFIPS to NHGISST
+  mutate(
+    id1990 = as.numeric(NHGISST) * 10000 + as.numeric(NHGISCTY) ,
+    geo = as_geos_geometry(geometry, crs=102003)
+    ) 
+```
+
 
 <!-- I also use 1950 county boundaries derived from 2008 TIGER/line files -->
 <!-- dowloaded from [https://www.nhgis.org/data-availability#gis-files](NHGIS) -->
 <!-- [@manson_steven_national_2022]. -->
+
+```{r crosswalk }
+# Crosswalk file from Eckert, Gvirtz, Liang, and Peters (2020)
+# github repo link for replication data:
+url <- "https://raw.githubusercontent.com/liang-jack-a/EGLP_Crosswalk/master/Crosswalks/county_crosswalk_endyr_1990.csv"
+crosswalk <- read_csv(url) %>%
+  filter(Year %in% 1940:1980) %>% # 1990 counties don't appear as their own rows
+  mutate( # combine state and county codes into single id variable
+    id     = as.numeric(NHGISST) * 10000 + as.numeric(NHGISCTY),
+    id1990 = as.numeric(NHGISST_1990) * 10000 + as.numeric(NHGISCTY_1990)) 
+crosswalk <- crosswalk %>% 
+  bind_rows( # fill in rows for 1990 counties
+    crosswalk %>% 
+      distinct(id1990, .keep_all = TRUE) %>% 
+      mutate(
+        Year     = 1990,
+        NHGISST  = NHGISST_1990,
+        NHGISCTY = NHGISCTY_1990,
+        STATENAM = STATENAM_1990,
+        NHGISNAM = NHGISNAM_1990,
+        ICPSRST  = ICPSRST_1990,
+        ICPSRCTY = ICPSRCTY_1990,
+        area_base= NA,
+        area     = NA,
+        weight   = 1,
+      )
+  ) 
+```
+
 
 Although most county borders did not change much in the second half of the 20th
 Century, there were counties which split, merged, or had name changes which can 
@@ -46,12 +140,58 @@ For my analysis, I take the crosswalk weights from the example csv file for the 
 which is published on the authors' 
 [github repository](https://github.com/liang-jack-a/EGLP_Crosswalk/tree/master).
 
+```{r}
+countyyr_df <- 
+ right_join(crosswalk, census_df, 
+            by = c("id1990", "Year"), 
+            relationship = "many-to-many") %>% 
+  group_by(Year, id1990, STATENAM, NHGISNAM) %>% 
+  summarise(across(starts_with(c("mig","pop")), ~ sum(.x * weight))) 
+
+countyyr_df <- left_join(countyyr_df, county1990_shp, by = "id1990")
+
+county1940_df <- countyyr_df %>% filter(Year==1940)
+
+plot(county1940_df$geo, col = pop_total)
+
+ggplot(data = county1940_df) +
+  geom_sf(aes(geometry = geometry, fill = migratio_total), size = 0.1) +
+  scale_fill_viridis_c() +
+  theme_void()
+```
+
+
+
+### Camp Locations
+
+Locations for historical interment camp locations were archived by 
+[Densho Encyclopedia](http://encyclopedia.densho.org/War_Relocation_Authority/#Planning_the_Camps)
+and downloaded in csv form via the 
+[Behind Barbed Wires story project](https://www.arcgis.com/home/item.html?id=69183af8d45d4f46a9dc4eba99440891).
+
+```{r read-camplocations }
+camplocations_df <- read_csv("data/BehindBarbedWire_StoryMap/BehindBarbedWire_StoryMap_InternmentCampLocationsMap_Data.csv") %>% 
+  # I'm not sure what CRS the source is in, but this is the most common one
+  mutate(geo = geos_make_point(Longitude, Latitude) %>% st_transform(., src = 4326, dst = 102003))
+
+plot(county1990_shp$geo)
+plot(camplocations_df$geo, col = "red", add= T)
+
+county_map + 
+  geom_sf(data = camplocations_df, aes(geometry=geometry), color = "red")
+```
+
 I calculate the straight line distances in meters between each 1950 county centroid to each camp location in QGIS
 with the `Distance Matrix` tool using the Standard (N x T) distance matrix setting.
 
+```{r calculate-distances }
+geos_distance(county1990_shp$geo, as_geos_geometry())
+```
+
+
 ## Historical counties dataset
 
-```{r}
+```{r setup }
 library(tidyverse)
 census_df <- read_csv(here::here("./data/migrations_crosswalked.csv"), show_col_types = F)
 obsbyyear_tbl <- census_df %>% count(Year)

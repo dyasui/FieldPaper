@@ -18,3 +18,4 @@
 data/*
 # whitelist files in data
 !data/**.R
+.Rproj.user

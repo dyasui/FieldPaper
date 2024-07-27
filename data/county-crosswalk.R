@@ -9,7 +9,7 @@ crosswalk <- read_csv(url) %>%
   mutate( # combine state and county codes into single id variable
     id     = as.numeric(NHGISST) * 10000 + as.numeric(NHGISCTY),
     id1990 = as.numeric(NHGISST_1990) * 10000 + as.numeric(NHGISCTY_1990)) 
-crossalk <- crosswalk %>% 
+crosswalk <- crosswalk %>% 
   bind_rows( # fill in rows for 1990 counties
     crosswalk %>% 
       distinct(id1990, .keep_all = TRUE) %>% 
@@ -41,9 +41,9 @@ migrations_cleaned_df <-
 
 write_csv(migrations_cleaned_df, file = "./data/migrations_crosswalked.csv")
 
-migcountypanel <- migrations_cleaned_df %>% 
-  pivot_wider(names_from = Year, 
-              values_from = c(mig_total, mig_white, mig_black, mig_aian, mig_oapi, mig_chin, mig_japn, mig_other,
-                              pop_total, pop_white, pop_black, pop_aian, pop_oapi, pop_chin, pop_japn, pop_other)
-              ) %>% 
-  filter(!is.na(pop_total_1940), !is.na(pop_total_1950), !is.na(pop_total_1960), !is.na(pop_total_1970), !is.na(pop_total_1980))
+# migcountypanel <- migrations_cleaned_df %>% 
+#   pivot_wider(names_from = Year, 
+#               values_from = c(mig_total, mig_white, mig_black, mig_aian, mig_oapi, mig_chin, mig_japn, mig_other,
+#                               pop_total, pop_white, pop_black, pop_aian, pop_oapi, pop_chin, pop_japn, pop_other)
+#               ) %>% 
+#   filter(!is.na(pop_total_1940), !is.na(pop_total_1950), !is.na(pop_total_1960), !is.na(pop_total_1970), !is.na(pop_total_1980))

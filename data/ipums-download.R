@@ -11,7 +11,7 @@ library(ipumsr)
 # select census samples for ipums API -----
 migration_samples <- get_sample_info("usa") %>%
   filter(str_detect(description, 
-        '1940 1%|1950 1%|1960 5%|1970 Form 1 Metro|1980 1%|1990 1%')) %>%
+        '1940 1%|1950 1%|1960 5%|1970 Form 2 Metro|1980 1%|1990 1%')) %>%
   select(name) %>% pull()
 
 # select variables -----
@@ -19,15 +19,16 @@ variables <- list(
   "YEAR"     , "PERWT"    , 
   "STATEFIP" , "STATEICP" , "COUNTYICP" , "METAREA"  , "CITY"     , 
   "MIGRATE5" , "MIGPLAC5" , "MIGRATE1"  , "MIGPLAC1" ,
-  "RACE"     , "BPL"      , # "AGE"       , "SEX",
+  "RACE"     , "BPL"      ,  "AGE"       , "SEX" ,
   "EMPSTAT"  , "LABFORCE" , "INCWAGE"   , "INCTOT"   , "OCCSCORE" 
   )
 
 # pipeline to create and download data extract using ipumsr -----
-define_extract_usa(description = "census data for years 1940 through 1990",
+define_extract_usa(description = "census migration data for years 1940 through 1990",
                      samples = migration_samples,
                      variables = variables) %>%
   submit_extract() %>%
+  # use is_extract_ready() if you want to avoid R session from being occupied
   wait_for_extract() %>%
   download_extract(download_dir = "data/census")
 
