@@ -1,0 +1,25 @@
+---
+name: Methods
+---
+
+## immigration on dist to camps
+
+### within cont. US migration of japanese americans
+
+$$
+\frac{mig\_japn_{it}}{mig\_total_{it}} = \beta_0 + \beta_1 \min_{c\in C} Dist^{c\rightarrow i} 
++ \mathbb{X}_{ct} \gamma +  \epsilon_{ct}
+$$ {#eq-campdist-migration}
+
+***variable definitions***
+
+***controls specs***
+
+***assumptions***
+
+### new immigration from japan
+
+*** Repeat @eq-campdist-migration with different lhs ***
+
+## individual-level characteristics vs internees?
+

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
     <meta charset="utf-8">
-    <meta name="generator" content="quarto-1.5.43">
+    <meta name="generator" content="quarto-1.4.553">
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -32,7 +32,7 @@
       }
       @media print {
       pre > code.sourceCode { white-space: pre-wrap; }
-      pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+      pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
       }
       pre.numberSource code
         { counter-reset: source-line 0; }
@@ -176,12 +176,7 @@
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
-     <script async="" src="https://hypothes.is/embed.js"></script>
-<script>
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    document.body.classList.add('hypothesis-enabled');
-  });
-</script>  
+     
       </head>
 
   <body class="quarto-notebook">
@@ -205,11 +200,11 @@
   </ul>
 </nav>
 </div>
-<div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
 </div>
 <main class="content quarto-banner-title-block" id="quarto-document-content">      <section id="population-and-migration" class="level2">
 <h2 class="anchored" data-anchor-id="population-and-migration">Population and Migration</h2>
-<p>For long-run migration data, I use the Decennial Census data provided by the US Census Bureau via the <a href="https://usa.ipums.org/usa/index.shtml">Integrated Public Use Microdata Series</a> <span class="citation" data-cites="ruggles_steven_ipums_2020">(<a href="#ref-ruggles_steven_ipums_2020" role="doc-biblioref">Ruggles, Steven et al. 2020</a>)</span>. The census samples for which county locations are available include the 1940, 1950, 1980, and 1990 1% samples, the 1960 5% sample, and the 1970 Form 1 Metro 1% sample.</p>
+<p>For long-run migration data, I use the Decennial Census data provided by the US Census Bureau via the <a href="https://usa.ipums.org/usa/index.shtml">Integrated Public Use Microdata Series</a> <span class="citation" data-cites="ruggles_steven_ipums_2020">(<a href="#ref-ruggles_steven_ipums_2020" role="doc-biblioref"><strong>ruggles_steven_ipums_2020?</strong></a>)</span>. The census samples for which county locations are available include the 1940, 1950, 1980, and 1990 1% samples, the 1960 5% sample, and the 1970 Form 1 Metro 1% sample.</p>
 <p>For the calculation of migration rates between counties, I define a migrant as someone who reports that they either moved within the state, between states, or that they were abroad five years ago (or in the past 1 year for 1960 respondants). This excludes people who report moving within the same house, didn’t report their previous location, or the location is unknown.</p>
 </section>
 <section id="geography" class="level2">
@@ -244,9 +239,6 @@
 <div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
 <div id="ref-eckert_method_2020" class="csl-entry" role="listitem">
 Eckert, Fabian, Andrés Gvirtz, Jack Liang, and Michael Peters. 2020. <span>“A <span>Method</span> to <span>Construct</span> <span>Geographical</span> <span>Crosswalks</span> with an <span>Application</span> to <span>US</span> <span>Counties</span> Since 1790.”</span> Working {Paper}. Working <span>Paper</span> <span>Series</span>. National Bureau of Economic Research. <a href="https://doi.org/10.3386/w26770">https://doi.org/10.3386/w26770</a>.
-</div>
-<div id="ref-ruggles_steven_ipums_2020" class="csl-entry" role="listitem">
-Ruggles, Steven, Flood, Sarah, Goeken, Ronald, Schouweiler, Megan, and Sobek, Matthew. 2020. <span>“<span>IPUMS</span> <span>USA</span>: <span>Version</span> 12.0 [Dataset].”</span> <a href="https://usa.ipums.org/usa/cite.shtml">https://usa.ipums.org/usa/cite.shtml</a>.
 </div>
 </div>
 </section>
@@ -286,7 +278,18 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
     return false;
   }
-  const onCopySuccess = function(e) {
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
     // button target
     const button = e.trigger;
     // don't keep focus
@@ -318,29 +321,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }, 1000);
     // clear code selection
     e.clearSelection();
-  }
-  const getTextToCopy = function(trigger) {
-      const codeEl = trigger.previousElementSibling.cloneNode(true);
-      for (const childEl of codeEl.children) {
-        if (isCodeAnnotation(childEl)) {
-          childEl.remove();
-        }
-      }
-      return codeEl.innerText;
-  }
-  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
-    text: getTextToCopy
   });
-  clipboard.on('success', onCopySuccess);
-  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
-    // For code content inside modals, clipBoardJS needs to be initialized with a container option
-    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
-    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
-      text: getTextToCopy,
-      container: window.document.getElementById('quarto-embedded-source-code-modal')
-    });
-    clipboardModal.on('success', onCopySuccess);
-  }
     var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
     var mailtoRegex = new RegExp(/^mailto:/);
       var filterRegex = new RegExp('/' + window.location.host + '/');
@@ -348,7 +329,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
         return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
     }
     // Inspect non-navigation links and adorn them if external
- 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
     for (var i=0; i<links.length; i++) {
       const link = links[i];
       if (!isInternal(link.href)) {

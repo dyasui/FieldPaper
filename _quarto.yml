@@ -8,13 +8,10 @@ manuscript:
   article: main.qmd
 
 format:
-  html:
-    comments:
-      hypothesis: true
   pdf: 
     documentclass: article
     link-citations: true
-    pdf-engine: latexmk
+    suppress-bibliography: true
     keep-tex: false
     geometry: 
       - left=1in

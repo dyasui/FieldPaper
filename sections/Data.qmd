@@ -3,11 +3,12 @@ name: data
 ---
 
 ```{r data-packages}
-library(tidytable)
+library(tidyverse)
 library(ipumsr)
 library(labelled)
 library(geos)
 library(data.table)
+library(sf)
 ```
 
 ## Population and Migration
@@ -48,7 +49,7 @@ define_extract_usa(description = "census migration data for years 1940 through 1
 
 For long-run migration data,
 I use the Decennial Census data provided by the US Census Bureau via the 
-[Integrated Public Use Microdata Series](https://usa.ipums.org/usa/index.shtml) [@ruggles_steven_ipums_2020].
+[Integrated Public Use Microdata Series](https://usa.ipums.org/usa/index.shtml) [@ruggles_steven_ipums_2024].
 The census samples for which county locations are available include the 
 1940, 1950, 1980, and 1990 1% samples, the 1960 5% sample,
 and the 1970 Form 2 Metro 1% sample.
@@ -140,7 +141,13 @@ For my analysis, I take the crosswalk weights from the example csv file for the 
 which is published on the authors' 
 [github repository](https://github.com/liang-jack-a/EGLP_Crosswalk/tree/master).
 
-```{r}
+```{r setup }
+library(tidyverse)
+census_df <- read_csv(here::here("./data/migrations_crosswalked.csv"), show_col_types = F)
+obsbyyear_tbl <- census_df %>% count(Year)
+```
+
+```{r countyyeardataset}
 countyyr_df <- 
  right_join(crosswalk, census_df, 
             by = c("id1990", "Year"), 
@@ -150,14 +157,20 @@ countyyr_df <-
 
 countyyr_df <- left_join(countyyr_df, county1990_shp, by = "id1990")
 
+```
+
+```{r countybordersmap}
 county1940_df <- countyyr_df %>% filter(Year==1940)
 
-plot(county1940_df$geo, col = pop_total)
+# plot(county1940_df$geo, col = pop_total)
 
-ggplot(data = county1940_df) +
-  geom_sf(aes(geometry = geometry, fill = migratio_total), size = 0.1) +
-  scale_fill_viridis_c() +
+county_map <- ggplot(data = county1940_df) +
+  geom_sf(aes(geometry = geometry)) +
   theme_void()
+
+county_map + 
+  geom_sf(aes(geometry = geometry, fill = migratio_total), size = 0.1) +
+  scale_fill_viridis_c() 
 ```
 
 
@@ -170,32 +183,46 @@ and downloaded in csv form via the
 [Behind Barbed Wires story project](https://www.arcgis.com/home/item.html?id=69183af8d45d4f46a9dc4eba99440891).
 
 ```{r read-camplocations }
-camplocations_df <- read_csv("data/BehindBarbedWire_StoryMap/BehindBarbedWire_StoryMap_InternmentCampLocationsMap_Data.csv") %>% 
-  # I'm not sure what CRS the source is in, but this is the most common one
-  mutate(geo = geos_make_point(Longitude, Latitude) %>% st_transform(., src = 4326, dst = 102003))
+camplocations_df <- 
+  read_csv("data/BehindBarbedWire_StoryMap/BehindBarbedWire_StoryMap_InternmentCampLocationsMap_Data.csv") %>% 
+  st_as_sf(
+    .,
+    coords = c("Longitude", "Latitude"), 
+    crs = 4326
+    ) %>% 
+  mutate(
+    geometry = st_transform(geometry, crs = st_crs(county1990_shp$geometry))
+    )
 
-plot(county1990_shp$geo)
-plot(camplocations_df$geo, col = "red", add= T)
+plot(county1990_shp$geo,
+     xaxt = 'n', yaxt = 'n', ann = FALSE,
+     main = "WRA Camp Coordinates")
+plot(
+  camplocations_df$geometry, 
+  add= T,
+  col = "red", 
+  bg = "red",
+  pch = 16,
+  )
 
-county_map + 
-  geom_sf(data = camplocations_df, aes(geometry=geometry), color = "red")
+# county_map + 
+#   geom_sf(data = camplocations_df, aes(geometry=geometry), color = "red")
 ```
 
 I calculate the straight line distances in meters between each 1950 county centroid to each camp location in QGIS
 with the `Distance Matrix` tool using the Standard (N x T) distance matrix setting.
 
 ```{r calculate-distances }
-geos_distance(county1990_shp$geo, as_geos_geometry())
+distance_matrix <- st_distance(
+  county1990_shp$geometry, 
+  camplocations_df$geometry, 
+  ) %>% 
+  as_tibble()
 ```
 
 
 ## Historical counties dataset
 
-```{r setup }
-library(tidyverse)
-census_df <- read_csv(here::here("./data/migrations_crosswalked.csv"), show_col_types = F)
-obsbyyear_tbl <- census_df %>% count(Year)
-```
 
 After narrowing down to counties which can be observed in each census year
 and then translating the historical counties to 1990 county boundaries,
@@ -213,8 +240,8 @@ Each observation represents an individual county at a given year in time
 if it had the same borders as it had in 1990.
 
 The Census Bureau confidentiality standards state that public-use microdata will
-cannot show report locations with populations of less than 100,000 people
-[@federal_committee_on_statistical_methodology_statistical_2005].
+cannot show report locations with populations of less than 100,000 people.
+<!-- [@federal_committee_on_statistical_methodology_statistical_2005]. -->
 For this reason, many sparsely-populated counties will be omitted from my sample
 because there are not enough observations for the Census to report locations of individuals living there.
 

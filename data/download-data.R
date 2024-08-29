@@ -1,7 +1,7 @@
 library(tidyverse)
 library(ipumsr)
 
-# Download with IPUMS api: ----
+# Download county shapefiles with IPUMS api: ----
 county_shapefiles <- ipumsr::get_metadata_nhgis("shapefiles") %>%
   filter(year == 1990,
          geographic_level == 'County',
@@ -18,3 +18,5 @@ for (year in county_shapefiles) {
     download_extract(download_dir = "./data/maps/")
 }
 tictoc::toc()
+
+
