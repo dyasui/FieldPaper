@@ -1,10 +1,11 @@
----
-name: Results
----
 
-### 
+library(tidyverse)
+library(ipumsr)
+library(labelled)
+library(geos)
+library(data.table)
+library(sf)
 
-```{r results-setup}
 library(tidyverse)
 library(stargazer)
 data <- read_csv("data/joined.csv") %>% 
@@ -21,12 +22,9 @@ data <- data %>%
     ) %>% 
   rowwise() %>% 
   mutate(dist_nearest = min(dist_GilaRiver:dist_HeartMt, na.rm=TRUE)) 
-```
 
-```{r campdist-migration_reg}
 lm1 <- lm(y ~ dist_nearest, data = data) 
 lm2 <- lm(y ~ dist_nearest*ez, data = data)
 stargazer(lm1, lm2, type = "text")
-```
 
 
