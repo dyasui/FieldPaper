@@ -7,8 +7,7 @@ name: Results
 ```{r results-setup}
 library(tidyverse)
 library(stargazer)
-data <- read_csv("data/joined.csv") %>% 
-  select(!`...1`) %>% 
+data <- read_csv("data/migrations_crosswalked.csv") %>% 
   filter(!if_any(dist_GilaRiver:dist_HeartMt, is.na))
 
 data <- data %>% 
@@ -26,7 +25,7 @@ data <- data %>%
 ```{r campdist-migration_reg}
 lm1 <- lm(y ~ dist_nearest, data = data) 
 lm2 <- lm(y ~ dist_nearest*ez, data = data)
-stargazer(lm1, lm2, type = "text")
+stargazer(lm1, lm2)
 ```
 
 

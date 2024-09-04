@@ -1,20 +1,18 @@
 library(tidyverse)
 library(ipumsr)
 library(labelled)
+library(sf)
 
 RelocationDestinations_Cities <-
   read_csv("./data/WRA-infinitecoop/RelocationDestinations_Cities.csv") %>% 
-  mutate(City = str_replace(City, "Berkely", "Berkeley"))
+  mutate(City = str_replace(City, "Berkely", "Berkeley")) %>% 
+  mutate(State_name = usdata::abbr2state(State))
 
-uscities <- read_csv("~/Desktop/FieldPaper/data/simplemaps_uscities_basicv1.78/uscities.csv") %>% 
-  add_row(city = "Bridgeton", state_id = "NJ", county_name = "Cumberland") %>% 
-  add_row(city = "Venice", state_id = "CA", county_name = "Los Angeles")
+places_1950 <- read_ipums_sf("data/maps/nhgis0023_shape.zip") 
 
-RelocationDestinations_Cities <-
-  left_join(RelocationDestinations_Cities, uscities, 
-            by = c('City'='city', 'State'='state_id')) %>% 
-  group_by(State, county_name) %>% 
-  mutate(state_name = usdata::abbr2state(State))
+RelocationDestinations_Cities <- 
+  left_join(RelocationDestinations_Cities, places_1950, 
+            by = c('City'='NAME', 'State_name'='STATE')) 
 
 load("~/Desktop/FieldPaper/data/counties.Rda")
 

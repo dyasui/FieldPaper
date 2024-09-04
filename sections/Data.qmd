@@ -93,7 +93,7 @@ which is published on the authors'
 
 ```{r setup }
 library(tidyverse)
-census_df <- read_csv(here::here("./data/migrations_crosswalked.csv"), show_col_types = F)
+census_df <- read_csv(here::here("./data/migrations_crosswalked.csv"), show_col_types = f)
 obsbyyear_tbl <- census_df %>% count(Year)
 ```
 

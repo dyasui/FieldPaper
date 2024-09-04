@@ -122,3 +122,14 @@ write_csv(migrations_cleaned_df, file = "./data/migrations_crosswalked.csv")
 #                               pop_total, pop_white, pop_black, pop_aian, pop_oapi, pop_chin, pop_japn, pop_other)
 #               ) %>% 
 #   filter(!is.na(pop_total_1940), !is.na(pop_total_1950), !is.na(pop_total_1960), !is.na(pop_total_1970), !is.na(pop_total_1980))
+census_df <- read_csv(here::here("./data/migrations_crosswalked.csv"), show_col_types = f)
+
+countyyr_df <- 
+ right_join(crosswalk, census_df, 
+            by = c("id1990", "Year"), 
+            relationship = "many-to-many") %>% 
+  group_by(Year, id1990, STATENAM, NHGISNAM) %>% 
+  summarise(across(starts_with(c("mig","pop")), ~ sum(.x * weight))) 
+
+countyyr_df <- left_join(countyyr_df, county1990_shp, by = "id1990")
+save(countyyr_df, file = "data/countyyr_df.rda")
