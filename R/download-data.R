@@ -76,4 +76,16 @@ for (year in county_shapefiles) {
 }
 tictoc::toc()
 
+# ---- NHGIS historical shapefiles ---- #
+county1990_shp_name <- get_metadata_nhgis("shapefiles") %>%
+  filter(year == 1990,
+         geographic_level == 'County',
+         str_detect( basis, '^2008' )) %>% # 2008 TIGER/Lines basis
+  select(name) %>% pull()
 
+define_extract_nhgis(
+    description = "NHGIS shapefile for 1990 county boundaries",
+    shapefiles = "us_county_1990_tl2008" ) %>%
+    submit_extract() %>%
+    wait_for_extract() %>%
+    download_extract(download_dir = "./data/maps/")

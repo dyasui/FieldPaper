@@ -5,9 +5,9 @@ library(labelled)
 library(geos)
 library(data.table)
 library(sf)
-
-library(tidyverse)
 library(stargazer)
+
+
 data <- read_csv("data/joined.csv") %>% 
   select(!`...1`) %>% 
   filter(!if_any(dist_GilaRiver:dist_HeartMt, is.na))

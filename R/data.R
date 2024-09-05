@@ -54,8 +54,6 @@ write_csv(migrations_df, file = "./data/migrations.csv")
 
 #----DISTANCES----
 
-library(sf)
-
 # read in county-camp distances from QGIS
 county_distances <- st_read("./data/maps/camp-distances.gpkg")%>% 
   filter(!STATENAM %in% c("Hawaii Territory", "Alaska Territory")) %>% 
@@ -128,32 +126,14 @@ write_csv(migrations_cleaned_df, file = "./data/migrations_crosswalked.csv")
 #                               pop_total, pop_white, pop_black, pop_aian, pop_oapi, pop_chin, pop_japn, pop_other)
 #               ) %>% 
 #   filter(!is.na(pop_total_1940), !is.na(pop_total_1950), !is.na(pop_total_1960), !is.na(pop_total_1970), !is.na(pop_total_1980))
-census_df <- read_csv(here::here("./data/migrations_crosswalked.csv"), show_col_types = f)
+census_df <- read_csv(here::here("./data/migrations_crosswalked.csv"), show_col_types = F)
 
-countyyr_df <- 
+countyyr_crosswalked <- 
  right_join(crosswalk, census_df, 
             by = c("id1990", "Year"), 
             relationship = "many-to-many") %>% 
   group_by(Year, id1990, STATENAM, NHGISNAM) %>% 
   summarise(across(starts_with(c("mig","pop")), ~ sum(.x * weight))) 
-
-countyyr_df <- left_join(countyyr_df, county1990_shp, by = "id1990")
-save(countyyr_df, file = "data/countyyr_df.rda")
-
-#---*from Data.qmd*---#
-#---- download shapefiles from NHGIS ----#
-county1990_shp_name <- get_metadata_nhgis("shapefiles") %>%
-  filter(year == 1990,
-         geographic_level == 'County',
-         str_detect( basis, '^2008' )) %>% # 2008 TIGER/Lines basis
-  select(name) %>% pull()
-
-define_extract_nhgis(
-    description = "NHGIS shapefile for 1990 county boundaries",
-    shapefiles = "us_county_1990_tl2008" ) %>%
-    submit_extract() %>%
-    wait_for_extract() %>%
-    download_extract(download_dir = "./data/maps/")
 
 # read nhgis shapefile, only cont. us states
 county1990_shp <- read_ipums_sf("data/maps/nhgis0018_shape/nhgis0018_shapefile_tl2008_us_county_1990.zip") %>% 
@@ -165,46 +145,11 @@ county1990_shp <- read_ipums_sf("data/maps/nhgis0018_shape/nhgis0018_shapefile_t
     geo = as_geos_geometry(geometry, crs=102003)
     ) 
 
-#---- read in historical county crosswalks ----#
-# Crosswalk file from Eckert, Gvirtz, Liang, and Peters (2020)
-# github repo link for replication data:
-url <- "https://raw.githubusercontent.com/liang-jack-a/EGLP_Crosswalk/master/Crosswalks/county_crosswalk_endyr_1990.csv"
-crosswalk <- read_csv(url) %>%
-  filter(Year %in% 1940:1980) %>% # 1990 counties don't appear as their own rows
-  mutate( # combine state and county codes into single id variable
-    id     = as.numeric(NHGISST) * 10000 + as.numeric(NHGISCTY),
-    id1990 = as.numeric(NHGISST_1990) * 10000 + as.numeric(NHGISCTY_1990)) 
-crosswalk <- crosswalk %>% 
-  bind_rows( # fill in rows for 1990 counties
-    crosswalk %>% 
-      distinct(id1990, .keep_all = TRUE) %>% 
-      mutate(
-        Year     = 1990,
-        NHGISST  = NHGISST_1990,
-        NHGISCTY = NHGISCTY_1990,
-        STATENAM = STATENAM_1990,
-        NHGISNAM = NHGISNAM_1990,
-        ICPSRST  = ICPSRST_1990,
-        ICPSRCTY = ICPSRCTY_1990,
-        area_base= NA,
-        area     = NA,
-        weight   = 1,
-      )
-  ) 
+countyyr_gis <- left_join(countyyr_crosswalked, county1990_shp, by = "id1990")
+
+#---*from Data.qmd*---#
 
 #---- read cleaned census dataset ----#
-census_df <- read_csv(here::here("./data/migrations_crosswalked.csv"), show_col_types = F)
-obsbyyear_tbl <- census_df %>% count(Year)
-
-countyyr_df <- 
- right_join(crosswalk, census_df, 
-            by = c("id1990", "Year"), 
-            relationship = "many-to-many") %>% 
-  group_by(Year, id1990, STATENAM, NHGISNAM) %>% 
-  summarise(across(starts_with(c("mig","pop")), ~ sum(.x * weight))) 
-
-countyyr_df <- left_join(countyyr_df, county1990_shp, by = "id1990")
-
 
 county1940_df <- countyyr_df %>% filter(Year==1940)
 
