@@ -1,6 +1,7 @@
 # download data using IPUMS API 
 library(tidyverse)
 library(ipumsr)
+library(data.table)
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - # 
 # NOTE: use `set_ipums_api_key()`                       # 
 # with API key from https://account.ipums.org/api_keys  #
@@ -43,12 +44,12 @@ variables <- list(
   "YEAR"     , "PERWT"    , 
   "STATEFIP" , "STATEICP" , "COUNTYICP" , "METAREA"  , "CITY"     , 
   # "MIGRATE5" , "MIGPLAC5" , "MIGRATE1"  , "MIGPLAC1" ,
-  "RACE"     , "BPL"      , # "AGE"       , "SEX",
+  "RACE"     , "BPL"      , "AGE"       , "SEX",
   "EMPSTAT"  , "LABFORCE" , "INCWAGE"   , "INCTOT"   , "OCCSCORE" 
 )
 
 # Submit extract and download
-define_extract_usa(
+fullcount_download <- define_extract_usa(
   description = "full-count census data for years 1940 and 1950",
   samples = fullcount_samples,
   variables = variables) %>%
@@ -56,8 +57,7 @@ define_extract_usa(
   wait_for_extract() %>%
   download_extract(download_dir = "data/census")
 
-fullcount_df <- fread("./data/census/usa_00075.dat.gz")
-
+# ---- NHGIS SHAPEFILES ----
 # Download county shapefiles with IPUMS api: ----
 county_shapefiles <- ipumsr::get_metadata_nhgis("shapefiles") %>%
   filter(year == 1990,
