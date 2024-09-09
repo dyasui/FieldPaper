@@ -54,27 +54,48 @@ write_csv(migrations_df, file = "./data/migrations.csv")
 
 #----DISTANCES----
 
-# read in county-camp distances from QGIS
-county_distances <- st_read("./data/maps/camp-distances.gpkg")%>% 
-  filter(!STATENAM %in% c("Hawaii Territory", "Alaska Territory")) %>% 
-  rename(
-    dist_GilaRiver = `Gila.River.Relocation.Center`,
-    dist_Poston    = `Poston.Relocation.Center`,
-    dist_Jerome    = `Jerome.Relocation.Center`,
-    dist_Rohwer    = `Rohwer.Relocation.Center`,
-    dist_Manzanar  = `Manzanar.Relocation.Center`,
-    dist_Tule      = `Tule.Lake.Relocation.Center`,
-    dist_Granada   = `Granada.Relocation.Center`,
-    dist_Minidoka  = `Minidoka.Relocation.Center`,
-    dist_HeartMt   = `Heart.Mountain.Relocation.Center`
-  ) %>% 
-  select(
-    NHGISNAM,
-    STATENAM,
-    NHGISST,
-    NHGISCTY,
-    starts_with("dist_")
-  )
+county_1990_shp <- read_ipums_sf("data/maps/counties-1990_shape.zip")
+
+camplocations_df <- 
+  read_csv("data/BehindBarbedWire_StoryMap/BehindBarbedWire_StoryMap_InternmentCampLocationsMap_Data.csv") %>% 
+  st_as_sf(
+    .,
+    coords = c("Longitude", "Latitude"), 
+    crs = 4326
+    ) %>% 
+  mutate(
+    geometry = st_transform(geometry, crs = st_crs(county_1990_shp$geometry))
+    )
+
+# shorter camp names
+camp_names <- c("GilaRiver", "Poston", "Jerome", "Manzanar", "Tule", 
+                "Granada", "Minidoka", "HeartMt")
+
+county_1990_shp %>%
+  bind_cols( st_distance(county_1990_shp, camplocations_df$geometry) )
+
+### TODO: ----
+# - set column names as camp distances
+# Iterate over each camp location
+map_dfc(camp_names, ~{
+  # Calculate the distance to each county's centroid
+  distances <- st_distance(county_1990_shp,
+                           camplocations_df$geometry)
+  # Bind the distance as a new column in the county dataset
+  county_1990_shp <- county_1990_shp %>%
+    mutate(!!paste0("dist_", .x) := distances)
+})
+
+# A sample of how the final dataset will look like
+head(county_1990_shp)
+
+# Create a vector to store the distances
+distances <- st_distance(county_1990_shp$geometry, camplocations_df$geometry) %>%
+  as_tibble()
+
+# Bind the distances to the county dataset
+county_1990_shp <- county_1990_shp %>%
+  mutate(distances)
 
 write_csv(county_distances, "./data/distances.csv")
 
@@ -164,22 +185,6 @@ county_map +
   scale_fill_viridis_c() 
 
 #---- calculate distances to each camp ----#
-camplocations_df <- 
-  read_csv("data/BehindBarbedWire_StoryMap/BehindBarbedWire_StoryMap_InternmentCampLocationsMap_Data.csv") %>% 
-  st_as_sf(
-    .,
-    coords = c("Longitude", "Latitude"), 
-    crs = 4326
-    ) %>% 
-  mutate(
-    geometry = st_transform(geometry, crs = st_crs(county1990_shp$geometry))
-    )
-
-distance_matrix <- st_distance(
-  county1990_shp$geometry, 
-  camplocations_df$geometry, 
-  ) %>% 
-  as_tibble()
 
 #---- summarise crosswalked counties by pop ----#
 county_sample <- census_df %>% 
