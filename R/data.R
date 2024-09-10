@@ -68,36 +68,29 @@ camplocations_df <-
     )
 
 # shorter camp names
-camp_names <- c("GilaRiver", "Poston", "Jerome", "Manzanar", "Tule", 
-                "Granada", "Minidoka", "HeartMt")
+campnames_lookup <- c(GilaRiver = "V1", Poston = "V2", Jerome = "V3", Rohwer = "V4", Manzanar = "V5",
+  Tule = "V6", Granada = "V7", Minidoka = "V8", Topaz = "V9", HeartMt = "V10")
 
-county_1990_shp %>%
-  bind_cols( st_distance(county_1990_shp, camplocations_df$geometry) )
-
-### TODO: ----
-# - set column names as camp distances
-# Iterate over each camp location
-map_dfc(camp_names, ~{
-  # Calculate the distance to each county's centroid
-  distances <- st_distance(county_1990_shp,
-                           camplocations_df$geometry)
-  # Bind the distance as a new column in the county dataset
-  county_1990_shp <- county_1990_shp %>%
-    mutate(!!paste0("dist_", .x) := distances)
-})
-
-# A sample of how the final dataset will look like
-head(county_1990_shp)
-
-# Create a vector to store the distances
-distances <- st_distance(county_1990_shp$geometry, camplocations_df$geometry) %>%
-  as_tibble()
+temp_dist <- st_distance(county_1990_shp, camplocations_df$geometry) %>%
+  as_tibble() %>%
+  rename(any_of(campnames_lookup))
 
 # Bind the distances to the county dataset
-county_1990_shp <- county_1990_shp %>%
-  mutate(distances)
+ctycmpdist_shp <- county_1990_shp %>%
+  bind_cols(temp_dist)
 
-write_csv(county_distances, "./data/distances.csv")
+# keep track of closest camp to county
+# annoying syntax to get name of closest camp
+ctycmpdist_shp %>%
+  rowwise() %>%
+  mutate(
+    campclosest_dist = min(GilaRiver:HeartMt), 
+    campclosest = names(.)[]
+        )
+
+# write_csv(ctycmpdist_shp, "./data/distances.csv")
+
+save(ctycmpdist_shp, file = "./data/ctycmpdist.RData")
 
 #----CROSSWALKS----
 
