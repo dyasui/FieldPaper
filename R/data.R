@@ -73,22 +73,21 @@ campnames_lookup <- c(GilaRiver = "V1", Poston = "V2", Jerome = "V3", Rohwer = "
 
 temp_dist <- st_distance(county_1990_shp, camplocations_df$geometry) %>%
   as_tibble() %>%
-  rename(any_of(campnames_lookup))
+  rename(any_of(campnames_lookup)) %>% 
+  # keep track of closest camp to county
+  rowwise() %>%
+  mutate(
+    campclosest_dist = min(GilaRiver:HeartMt), 
+  # (annoying syntax to get name of closest camp)
+    campclosest = names(.)[1:10][which.min(c_across(GilaRiver:HeartMt))]
+        )
 
 # Bind the distances to the county dataset
 ctycmpdist_shp <- county_1990_shp %>%
   bind_cols(temp_dist)
 
-# keep track of closest camp to county
-# annoying syntax to get name of closest camp
-ctycmpdist_shp %>%
-  rowwise() %>%
-  mutate(
-    campclosest_dist = min(GilaRiver:HeartMt), 
-    campclosest = names(.)[]
-        )
-
-# write_csv(ctycmpdist_shp, "./data/distances.csv")
+ctycmpdist_shp <- ctycmpdist_shp %>%
+  # write_csv(ctycmpdist_shp, "./data/distances.csv")
 
 save(ctycmpdist_shp, file = "./data/ctycmpdist.RData")
 
