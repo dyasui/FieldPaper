@@ -54,7 +54,8 @@ write_csv(migrations_df, file = "./data/migrations.csv")
 
 #----DISTANCES----
 
-county_1990_shp <- read_ipums_sf("data/maps/counties-1990_shape.zip")
+county_1990_shp <- read_ipums_sf("data/maps/counties-1990_shape.zip") %>%
+  filter( ! STATENAM %in% c("Alaska", "Hawaii") )
 
 camplocations_df <- 
   read_csv("data/BehindBarbedWire_StoryMap/BehindBarbedWire_StoryMap_InternmentCampLocationsMap_Data.csv") %>% 
@@ -86,9 +87,8 @@ temp_dist <- st_distance(county_1990_shp, camplocations_df$geometry) %>%
 ctycmpdist_shp <- county_1990_shp %>%
   bind_cols(temp_dist)
 
-ctycmpdist_shp <- ctycmpdist_shp %>%
-  # write_csv(ctycmpdist_shp, "./data/distances.csv")
-
+# save distances dataset to file
+# write_csv(ctycmpdist_shp, "./data/distances.csv")
 save(ctycmpdist_shp, file = "./data/ctycmpdist.RData")
 
 #----CROSSWALKS----
