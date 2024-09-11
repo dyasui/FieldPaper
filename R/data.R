@@ -85,7 +85,8 @@ temp_dist <- st_distance(county_1990_shp, camplocations_df$geometry) %>%
 
 # Bind the distances to the county dataset
 ctycmpdist_shp <- county_1990_shp %>%
-  bind_cols(temp_dist)
+  bind_cols(temp_dist) %>%
+  st_drop_geometry() # drop gis formatting to make analysis easier
 
 # save distances dataset to file
 # write_csv(ctycmpdist_shp, "./data/distances.csv")
