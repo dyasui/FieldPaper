@@ -86,6 +86,7 @@ temp_dist <- st_distance(county_1990_shp, camplocations_df$geometry) %>%
 # Bind the distances to the county dataset
 ctycmpdist_shp <- county_1990_shp %>%
   bind_cols(temp_dist) %>%
+  mutate(id1990 = as.numeric(NHGISST) * 10000 + as.numeric(NHGISCTY)) %>%
   st_drop_geometry() # drop gis formatting to make analysis easier
 
 # save distances dataset to file
@@ -149,17 +150,8 @@ countyyr_crosswalked <-
   group_by(Year, id1990, STATENAM, NHGISNAM) %>% 
   summarise(across(starts_with(c("mig","pop")), ~ sum(.x * weight))) 
 
-# read nhgis shapefile, only cont. us states
-county1990_shp <- read_ipums_sf("data/maps/nhgis0018_shape/nhgis0018_shapefile_tl2008_us_county_1990.zip") %>% 
-  as.data.table() %>% 
-  filter(STATENAM %notin% c('Alaska', 'Hawaii')) %>% 
-  # need an extra zero to go from STATEFIPS to NHGISST
-  mutate(
-    id1990 = as.numeric(NHGISST) * 10000 + as.numeric(NHGISCTY) ,
-    geo = as_geos_geometry(geometry, crs=102003)
-    ) 
-
-countyyr_gis <- left_join(countyyr_crosswalked, county1990_shp, by = "id1990")
+main_data <- left_join(countyyr_crosswalked, ctycmpdist_shp, by = c("id1990", "STATENAM", "NHGISNAM"))
+write_csv(main_data, file = "data/data.csv")
 
 #---*from Data.qmd*---#
 
