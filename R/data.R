@@ -42,7 +42,7 @@ migrations_county <- ipumsmicro_df %>%
   summarise(
     pop_total      = sum(PERWT, na.rm = TRUE), 
     mig_total      = sum(IsMigrant * PERWT, na.rm = TRUE),
-    migratio_total = pop_total / mig_total
+    migratio_total = pop_total / mig_total,
     age_total      = weighted.mean(AGE, PERWT, na.rm = TRUE)
     ) %>% 
   ungroup() 
@@ -51,17 +51,21 @@ migrations_df <-
   left_join(
     migrations_county, migrations_race,
     by = c("YEAR", "STATEFIP", "COUNTYICP")
-    ) 
+    ) %>%
+  # need an extra zero to go from STATEFIPS to NHGISST
+  mutate(id = STATEFIP * 100000 + COUNTYICP) 
 
-write_csv(migrations_df, file = "./data/migrations.csv")
+# write_csv(migrations_df, file = "./data/migrations.csv")
 
 #----DISTANCES----
 
-county_1990_shp <- read_ipums_sf("data/maps/counties-1990_shape.zip") %>%
+nhgis_shape <- list.files(path = "data/maps", pattern = "*_shape.zip")
+
+county_1990_shp <- read_ipums_sf(paste("data/maps/", nhgis_shape, sep = "")) %>%
   filter( ! STATENAM %in% c("Alaska", "Hawaii") )
 
 camplocations_df <- 
-  read_csv("data/BehindBarbedWire_StoryMap/BehindBarbedWire_StoryMap_InternmentCampLocationsMap_Data.csv") %>% 
+  read_csv("data/BehindBarbedWire_StoryMap_Data/BehindBarbedWire_StoryMap_InternmentCampLocationsMap_Data.csv") %>% 
   st_as_sf(
     .,
     coords = c("Longitude", "Latitude"), 
@@ -94,7 +98,6 @@ ctycmpdist_shp <- county_1990_shp %>%
 
 # save distances dataset to file
 # write_csv(ctycmpdist_shp, "./data/distances.csv")
-save(ctycmpdist_shp, file = "./data/ctycmpdist.RData")
 
 #----CROSSWALKS----
 
@@ -124,11 +127,6 @@ crosswalk <- crosswalk %>%
       )
   ) 
 
-migrations_df <- read_csv("./data/migrations.csv")
-migrations_df <- migrations_df %>% 
-  # need an extra zero to go from STATEFIPS to NHGISST
-  mutate(id = STATEFIP * 100000 + COUNTYICP) 
-
 migrations_cleaned_df <-
   right_join(crosswalk, migrations_df, 
             by = c("id", "Year"="YEAR"), 
@@ -136,23 +134,8 @@ migrations_cleaned_df <-
   group_by(Year, id1990, STATENAM_1990, NHGISNAM_1990) %>% 
   summarise(across(starts_with(c("mig","pop")), ~ sum(.x * weight))) 
 
-write_csv(migrations_cleaned_df, file = "./data/migrations_crosswalked.csv")
 
-# migcountypanel <- migrations_cleaned_df %>% 
-#   pivot_wider(names_from = Year, 
-#               values_from = c(mig_total, mig_white, mig_black, mig_aian, mig_oapi, mig_chin, mig_japn, mig_other,
-#                               pop_total, pop_white, pop_black, pop_aian, pop_oapi, pop_chin, pop_japn, pop_other)
-#               ) %>% 
-#   filter(!is.na(pop_total_1940), !is.na(pop_total_1950), !is.na(pop_total_1960), !is.na(pop_total_1970), !is.na(pop_total_1980))
-census_df <- read_csv(here::here("./data/migrations_crosswalked.csv"), show_col_types = F)
+main_data <- left_join(migrations_cleaned_df, ctycmpdist_shp, by = "id1990")
 
-countyyr_crosswalked <- 
- right_join(crosswalk, census_df, 
-            by = c("id1990", "Year"), 
-            relationship = "many-to-many") %>% 
-  group_by(Year, id1990, STATENAM, NHGISNAM) %>% 
-  summarise(across(starts_with(c("mig","pop")), ~ sum(.x * weight))) 
-
-main_data <- left_join(countyyr_crosswalked, ctycmpdist_shp, by = c("id1990", "STATENAM", "NHGISNAM"))
 write_csv(main_data, file = "data/data.csv")
 
