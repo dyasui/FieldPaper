@@ -19,11 +19,11 @@ data <- read_csv("data/data.csv") %>%
     ) # %>%
   # mutate(across(GilaRiver:HeartMt, ~ lm(., na.rm=TRUE)))
 
-data <- tibble(
-  campclosest_dist = rnorm(1800000, 100000, n = 3141),
-  y = rnorm(0.15, 0.1, n = 3141),
-  Year = sample(c(1940, 1950 ,1960, 1970, 1980, 1990), size = 3141, replace = TRUE)
-)
+# data <- tibble(
+#   campclosest_dist = rnorm(1800000, 100000, n = 3141),
+#   y = rnorm(0.15, 0.1, n = 3141),
+#   Year = sample(c(1940, 1950 ,1960, 1970, 1980, 1990), size = 3141, replace = TRUE)
+# )
 
 lm1_1940 <- lm(y ~ log(campclosest_dist), data = data %>% filter(Year==1940)) 
 lm1_1950 <- lm(y ~ log(campclosest_dist), data = data %>% filter(Year==1950)) 
