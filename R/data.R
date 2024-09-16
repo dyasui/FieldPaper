@@ -116,10 +116,11 @@ temp_dist <- st_distance(county_1990_shp, camplocations_df$geometry) %>%
 ctycmpdist_shp <- county_1990_shp %>%
   bind_cols(temp_dist) %>%
   mutate(id1990 = as.numeric(NHGISST) * 10000 + as.numeric(NHGISCTY)) %>%
+  select(GilaRiver:id1990) %>%
   st_drop_geometry() # drop gis formatting to make analysis easier
 
 # save distances dataset to file
-# write_csv(ctycmpdist_shp, "./data/distances.csv")
+write_csv(ctycmpdist_shp, "./data/distances.csv")
 
 #----CROSSWALKS----
 
@@ -156,7 +157,7 @@ demographics_crosswalked <-
   group_by(Year, id1990, STATENAM_1990, NHGISNAM_1990) %>% 
   summarise(across(pop:unmp_rate_other, ~ sum(.x * weight))) 
 
-
+# bind distances to 
 main_data <- left_join(demographics_crosswalked, ctycmpdist_shp, by = "id1990")
 
 write_csv(main_data, file = "data/data.csv")

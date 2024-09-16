@@ -3,34 +3,7 @@ library(ipumsr)
 library(labelled)
 library(sf)
 
-# Relocation Destinations Map?
-RelocationDestinations_Cities <-
-  read_csv("./data/WRA-infinitecoop/RelocationDestinations_Cities.csv") %>% 
-  mutate(City = str_replace(City, "Berkely", "Berkeley")) %>% 
-  mutate(State_name = usdata::abbr2state(State))
-
-places_1950 <- read_ipums_sf("data/maps/placepoints-1950_shape.zip") 
-
-RelocationDestinations_Cities <- 
-  left_join(RelocationDestinations_Cities, places_1950, 
-            by = c('City'='NAME', 'State_name'='STATE')) 
-
-county_1990_shp <- read_ipums_sf("data/maps/counties-1990_shape.zip")
-
-counties_maps <- 
-  left_join(county_1990_shp, county_shapes, 
-              by = c("State", "County")) %>% 
-  rename(Group = group.x, group = group.y)
-
-ggplot() + 
-  geom_polygon(data=map_data("state"), aes(x=long, y=lat, group=group),
-               color = "black") + 
-  geom_polygon(data = map_data("county"), aes(x=long, y=lat, group=group), 
-               color = "grey", size = .05) +
-  geom_point(data = RelocationDestinations_Cities,
-             aes(x=lng, y=lat, size = People), color = "red") +
-  theme_void() + 
-  ggtitle('Relocated People by City') 
+county_1990_shp <- read_ipums_sf("data/maps/*_shape.zip")
 
 #---- Distances Map
 load("data/ctycmpdist.RData")

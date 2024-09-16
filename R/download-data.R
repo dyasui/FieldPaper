@@ -34,6 +34,19 @@ census_ipums_download <- define_extract_usa(
   wait_for_extract() %>%
   download_extract(download_dir = "data/census")
 
+# ---- NHGIS 1990 county border shapefiles ---- #
+county1990_shp_name <- get_metadata_nhgis("shapefiles") %>%
+  filter(year == 1990,
+         geographic_level == 'County',
+         str_detect( basis, '^2008' )) %>% # 2008 TIGER/Lines basis
+  select(name) %>% pull()
+
+define_extract_nhgis(
+    description = "NHGIS shapefile for 1990 county boundaries",
+    shapefiles = "us_county_1990_tl2008" ) %>%
+    submit_extract() %>%
+    wait_for_extract() %>%
+    download_extract(download_dir = "./data/maps/")
 
 # ---- FULL COUNT 1940 & 1950 CENSUS ----
 # fullcount_samples <- get_sample_info("usa") %>% 
@@ -75,16 +88,3 @@ census_ipums_download <- define_extract_usa(
 #     download_extract(download_dir = "./data/maps/")
 # }
 
-# ---- NHGIS historical shapefiles ---- #
-county1990_shp_name <- get_metadata_nhgis("shapefiles") %>%
-  filter(year == 1990,
-         geographic_level == 'County',
-         str_detect( basis, '^2008' )) %>% # 2008 TIGER/Lines basis
-  select(name) %>% pull()
-
-define_extract_nhgis(
-    description = "NHGIS shapefile for 1990 county boundaries",
-    shapefiles = "us_county_1990_tl2008" ) %>%
-    submit_extract() %>%
-    wait_for_extract() %>%
-    download_extract(download_dir = "./data/maps/")
