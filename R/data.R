@@ -105,10 +105,12 @@ temp_dist <- st_distance(county_1990_shp, camplocations_df$geometry) %>%
   # keep track of closest camp to county
   rowwise() %>%
   mutate(
+    # minimum of dist to any camp
     campclosest_dist = min(GilaRiver:HeartMt), 
-  # (annoying syntax to get name of closest camp)
-    campclosest = names(.)[1:10][which.min(c_across(GilaRiver:HeartMt))]
-        )
+    # (annoying syntax to get name of closest camp)
+    campclosest = names(.)[1:10][which.min(c_across(GilaRiver:HeartMt))],
+    logdistclosest = log(campclosest_dist)
+  )
 
 # Bind the distances to the county dataset
 ctycmpdist_shp <- county_1990_shp %>%
