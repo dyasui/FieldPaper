@@ -14,48 +14,68 @@ ipums_ddi <- list.files(path = "data/census", pattern = "*.xml")
 # read ipums microdata and identify inter-county migrants
 ipumsmicro_df <- read_ipums_micro(paste("data/census/", ipums_ddi, sep = "")) %>% 
   filter(COUNTYICP != 0) %>% # subset with location identified
-  mutate( IsMigrant = ((MIGRATE5 %in% c(2,3,4)) | (MIGRATE1 %in% c(2,3,4))) ) 
+  mutate(
+    IsMigrant = ((MIGRATE5 %in% c(2,3,4)) | (MIGRATE1 %in% c(2,3,4))) ,
+    # Recode ipums variables
+    INCWAGE = ifelse(INCWAGE == 999999, NA, INCWAGE), 
+    INCTOT = ifelse(INCTOT == 9999999, NA, INCTOT), 
+    i_female = case_when(SEX == 2 ~ 1, SEX == 1 ~ 0),
+    i_unemployed = case_when(EMPSTAT == 2 ~ 1, EMPSTAT == 0 ~ NA, .default = 0),
+    i_labforce = case_when(LABFORCE == 2 ~ 1, LABFORCE == 1 ~ 0, LABFORCE == 0 ~ NA), 
+    i_issei = ifelse(BPL == 501, 1, 0)
+  )
 
 # shorten race category names for column names
 val_labels(ipumsmicro_df$RACE) <- c( white = 1, black = 2, aian  = 3,  chin  = 4,
                                      japn  = 5, oapi  = 6, other = 7,  multi = c(8,9) )
 
 # create county-year-race summary statistics
-migrations_race <- ipumsmicro_df %>% 
+demographics_race <- ipumsmicro_df %>% 
   group_by(YEAR, STATEFIP, COUNTYICP, RACE) %>% 
   summarise(
     pop      = sum(PERWT), 
     mig      = sum(IsMigrant * PERWT),
     migratio = mig/pop,
-    age      = weighted.mean(AGE, PERWT, na.rm = TRUE)
+    across( # weight demographics by census person weight
+      c(AGE, INCWAGE, INCTOT, i_female, i_unemployed, i_labforce, i_issei),
+      ~ weighted.mean(., PERWT, na.rm = TRUE) 
+    ), 
+    # calculate unemployment rate
+    unmp_rate = sum(i_unemployed) / sum(i_labforce)
     ) %>% 
   ungroup() %>% 
-  mutate(RACE = to_factor(RACE)) %>% 
-  pivot_wider(names_from = RACE, values_from = c( pop, mig, migratio ) ) %>% 
   # assuming that if there is no-one in sub-sample, pop is zero 
-  mutate_all( ~replace(., is.na(.), 0))
+  mutate(across(c(pop, mig, migratio), ~replace(., is.na(.), 0))) %>% 
+  # pivot race group averages to columns
+  mutate(RACE = to_factor(RACE)) %>% 
+  pivot_wider(names_from = RACE, values_from = pop:unmp_rate ) 
   
 # create county-year summary statistics
-migrations_county <- ipumsmicro_df %>% 
+demographics_county <- ipumsmicro_df %>% 
   select(-RACE) %>% 
   group_by(YEAR, STATEFIP, COUNTYICP) %>% 
   summarise(
-    pop_total      = sum(PERWT, na.rm = TRUE), 
-    mig_total      = sum(IsMigrant * PERWT, na.rm = TRUE),
-    migratio_total = pop_total / mig_total,
-    age_total      = weighted.mean(AGE, PERWT, na.rm = TRUE)
+    pop      = sum(PERWT), 
+    mig      = sum(IsMigrant * PERWT),
+    migratio = mig/pop,
+    across( # weight demographics by census person weight
+      c(AGE, INCWAGE, INCTOT, i_female, i_unemployed, i_labforce, i_issei),
+      ~ weighted.mean(., PERWT, na.rm = TRUE) 
+    ), 
+    # calculate unemployment rate
+    unmp_rate = sum(i_unemployed) / sum(i_labforce)
     ) %>% 
   ungroup() 
 
-migrations_df <-
+demographics_df <-
   left_join(
-    migrations_county, migrations_race,
+    demographics_county, demographics_race,
     by = c("YEAR", "STATEFIP", "COUNTYICP")
     ) %>%
   # need an extra zero to go from STATEFIPS to NHGISST
   mutate(id = STATEFIP * 100000 + COUNTYICP) 
 
-# write_csv(migrations_df, file = "./data/migrations.csv")
+write_csv(demographics_df, file = "./data/demographics.csv")
 
 #----DISTANCES----
 
@@ -65,7 +85,7 @@ county_1990_shp <- read_ipums_sf(paste("data/maps/", nhgis_shape, sep = "")) %>%
   filter( ! STATENAM %in% c("Alaska", "Hawaii") )
 
 camplocations_df <- 
-  read_csv("data/BehindBarbedWire_StoryMap_Data/BehindBarbedWire_StoryMap_InternmentCampLocationsMap_Data.csv") %>% 
+  read_csv("data/BehindBarbedWire_StoryMap/BehindBarbedWire_StoryMap_InternmentCampLocationsMap_Data.csv") %>% 
   st_as_sf(
     .,
     coords = c("Longitude", "Latitude"), 
@@ -127,15 +147,15 @@ crosswalk <- crosswalk %>%
       )
   ) 
 
-migrations_cleaned_df <-
-  right_join(crosswalk, migrations_df, 
+demographics_crosswalked <-
+  right_join(crosswalk, demographics_df, 
             by = c("id", "Year"="YEAR"), 
             relationship = "many-to-many") %>% 
   group_by(Year, id1990, STATENAM_1990, NHGISNAM_1990) %>% 
-  summarise(across(starts_with(c("mig","pop")), ~ sum(.x * weight))) 
+  summarise(across(pop:unmp_rate_other, ~ sum(.x * weight))) 
 
 
-main_data <- left_join(migrations_cleaned_df, ctycmpdist_shp, by = "id1990")
+main_data <- left_join(demographics_crosswalked, ctycmpdist_shp, by = "id1990")
 
 write_csv(main_data, file = "data/data.csv")
 
