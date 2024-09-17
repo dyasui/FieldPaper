@@ -75,25 +75,29 @@ distancesmap <- countymap +
     fill = "Distance from county to closest camp (m)",
   ) + 
   viridis::scale_fill_viridis()
-
 ggsave("figures/countymap.png", plot = distancesmap, dpi = 350)
 
 ```
 
 ## Counties across Decades
 ```{r}
+
 migrationsmap <- data %>% 
   left_join(county_1990_shp, by = "id1990") %>% 
   ggplot(data = .) +
-  geom_sf(aes(fill = mig_japn)) + 
+  geom_sf(aes(geometry = geometry, fill = mig_japn)) + 
   labs(
-    title = "Japanese Migration Patterns over Time"
+    title = "Japanese Migration Patterns over Time",
     fill = "Number of new Japanese-American migrants"
   ) +
   facet_wrap(vars(Year)) +
   viridis::scale_fill_viridis() +
-  theme_void() 
-
+  theme_void() +
+  theme(
+    legend.position = "bottom",
+    legend.title.position = "top"
+  )
 ggsave("figures/migrationmap.png", plot = migrationsmap, dpi = 350)
+
 ``` 
 
