@@ -31,7 +31,7 @@ stargazer(
   title = "Effects of Distance to Closest Camp on Japanese Migration by Decade",
   column.labels = c("1940", "1950", "1960", "1970", "1980", "1990"),
   dep.var.labels = "Ratio of Japanese American migrants to total migrants",
-  # covariate.labels = c("Log distance to closest camp in meters", "Constant"),
+  covariate.labels = c("Log camp distance", "Constant"),
   omit.stat = c("ser", "f"),
   no.space=TRUE, 
   out = "tables/distreg.tex"
@@ -51,9 +51,9 @@ stargazer(
   column.labels = c("1940", "1950", "1960", "1970", "1980", "1990"),
   dep.var.labels = "Ratio of Japanese American migrants to total migrants",
   covariate.labels = c(
-    "Log distance to closest camp in meters",
-    "Evacuation Zone status",
-    "Log distance * Evacuation Zone status",
+    "Log camp distance",
+    "Evacuation Zone (EZ)",
+    "Log distance * EZ ",
     "Constant"
   ),
   omit.stat = c("ser", "f"),
