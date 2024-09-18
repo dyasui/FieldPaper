@@ -2,48 +2,37 @@
 library(tidyverse)
 library(stargazer)
 
-data <- read_csv("data/data.csv") %>% 
+data <- read_csv("data/data.csv") %>%
   mutate(
-    # outcome: migration percentage of japanese to total new migrants
-    y = mig_japn / mig * 100,
-    # evacuation zone status
-    ez = ifelse(
-      STATENAM_1990 %in% c("Arizona", "California", "Oregon", "Washington"),
-      1, 0
+    logdistclosest = ifelse(logdistclosest == -Inf, NA, logdistclosest)
     )
-    )  
 
-# data <- tibble(
-#   campclosest_dist = rnorm(1800000, 100000, n = 3141),
-#   y = rnorm(0.15, 0.1, n = 3141),
-#   Year = sample(c(1940, 1950 ,1960, 1970, 1980, 1990), size = 3141, replace = TRUE)
-# )
-
-lm1_1940 <- lm(y ~ logdisclosest, data = data %>% filter(Year==1940)) 
-lm1_1950 <- lm(y ~ logdisclosest, data = data %>% filter(Year==1950)) 
-lm1_1960 <- lm(y ~ logdisclosest, data = data %>% filter(Year==1960)) 
-lm1_1970 <- lm(y ~ logdisclosest, data = data %>% filter(Year==1970)) 
-lm1_1980 <- lm(y ~ logdisclosest, data = data %>% filter(Year==1980)) 
-lm1_1990 <- lm(y ~ logdisclosest, data = data %>% filter(Year==1990)) 
+lm1_1940 <- lm(y ~ logdistclosest, data = data %>% filter(Year==1940)) 
+lm1_1950 <- lm(y ~ logdistclosest, data = data %>% filter(Year==1950)) 
+lm1_1960 <- lm(y ~ logdistclosest, data = data %>% filter(Year==1960)) 
+lm1_1970 <- lm(y ~ logdistclosest, data = data %>% filter(Year==1970)) 
+lm1_1980 <- lm(y ~ logdistclosest, data = data %>% filter(Year==1980)) 
+lm1_1990 <- lm(y ~ logdistclosest, data = data %>% filter(Year==1990)) 
 stargazer(
   lm1_1940, lm1_1950, lm1_1960, lm1_1970, lm1_1980, lm1_1990,
   type = "text",
   title = "Effects of Distance to Closest Camp on Japanese Migration by Decade",
   column.labels = c("1940", "1950", "1960", "1970", "1980", "1990"),
   dep.var.labels = "Ratio of Japanese American migrants to total migrants",
-  covariate.labels = c("Log camp distance", "Constant"),
+  covariate.labels = c( "Log(Distance)", "Constant" ),
+  # notes = "Log(Distance) refers to the log of the distance in meters from each the centroid of each county's 1990 area to the nearest of the ten WRA internment camps. Each column represents a separate regression for each census year from 1940 to 1990.",
   omit.stat = c("ser", "f"),
   no.space=TRUE, 
   out = "tables/distreg.tex"
 )
 
 
-lm2_1940 <- lm(y ~ log(campclosest_dist) * ez, data = data %>% filter(Year==1940)) 
-lm2_1950 <- lm(y ~ log(campclosest_dist) * ez, data = data %>% filter(Year==1950)) 
-lm2_1960 <- lm(y ~ log(campclosest_dist) * ez, data = data %>% filter(Year==1960)) 
-lm2_1970 <- lm(y ~ log(campclosest_dist) * ez, data = data %>% filter(Year==1970)) 
-lm2_1980 <- lm(y ~ log(campclosest_dist) * ez, data = data %>% filter(Year==1980)) 
-lm2_1990 <- lm(y ~ log(campclosest_dist) * ez, data = data %>% filter(Year==1990)) 
+lm2_1940 <- lm(y ~ logdistclosest * ez, data = data %>% filter(Year==1940)) 
+lm2_1950 <- lm(y ~ logdistclosest * ez, data = data %>% filter(Year==1950)) 
+lm2_1960 <- lm(y ~ logdistclosest * ez, data = data %>% filter(Year==1960)) 
+lm2_1970 <- lm(y ~ logdistclosest * ez, data = data %>% filter(Year==1970)) 
+lm2_1980 <- lm(y ~ logdistclosest * ez, data = data %>% filter(Year==1980)) 
+lm2_1990 <- lm(y ~ logdistclosest * ez, data = data %>% filter(Year==1990)) 
 stargazer(
   lm2_1940, lm2_1950, lm2_1960, lm2_1970, lm2_1980, lm2_1990,
   type = "text",
@@ -51,13 +40,13 @@ stargazer(
   column.labels = c("1940", "1950", "1960", "1970", "1980", "1990"),
   dep.var.labels = "Ratio of Japanese American migrants to total migrants",
   covariate.labels = c(
-    "Log camp distance",
+    "Log(distance)",
     "Evacuation Zone (EZ)",
     "Log distance * EZ ",
-    "Constant"
-  ),
+    "Constant" ),
+  # notes = "Log(Distance) refers to the log of the distance in meters from each the centroid of each county's 1990 area to the nearest of the ten WRA internment camps. Counties in Arizona, California, Oregon, and Washington were part of the WRA's 'Evacuation Zone' which in this regression is an indicator value for whether each county is in one of these states. Log(Distance) * EZ is the interaction of the Evacuation Zone indicator variable with the log distance to the cclosest internment camp.",
   omit.stat = c("ser", "f"),
-  no.space=TRUE,
+  no.space = TRUE,
   out = "tables/ezdistreg.tex"
 )
 

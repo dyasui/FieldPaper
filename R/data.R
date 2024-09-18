@@ -74,15 +74,6 @@ demographics_df <-
     demographics_county, demographics_race,
     by = c("YEAR", "STATEFIP", "COUNTYICP")
     ) %>%
-  mutate(
-    # outcome: migration percentage of japanese to total new migrants
-    y = mig_japn / mig * 100,
-    # evacuation zone status
-    ez = ifelse(
-      to_factor(STATEFIP) %in% c("Arizona", "California", "Oregon", "Washington"),
-      1, 0
-      )
-    ) %>%
   # need an extra zero to go from STATEFIPS to NHGISST
   mutate(id = STATEFIP * 100000 + COUNTYICP) 
 
@@ -100,8 +91,7 @@ county_1990_shp <- read_ipums_sf(paste("data/maps/", nhgis_shape, sep = "")) %>%
 
 camplocations_df <- 
   read_csv("data/BehindBarbedWire_StoryMap/BehindBarbedWire_StoryMap_InternmentCampLocationsMap_Data.csv") %>% 
-  st_as_sf(
-    .,
+  st_as_sf(.,
     coords = c("Longitude", "Latitude"), 
     crs = 4326
     ) %>% 
@@ -169,7 +159,16 @@ demographics_crosswalked <-
             by = c("id", "Year"="YEAR"), 
             relationship = "many-to-many") %>% 
   group_by(Year, id1990, STATENAM_1990, NHGISNAM_1990) %>% 
-  summarise(across(pop:unmp_rate_other, ~ sum(.x * weight))) 
+  summarise(across(pop:unmp_rate_other, ~ sum(.x * weight))) %>%
+  mutate(
+    # outcome: migration percentage of japanese to total new migrants
+    y = mig_japn / mig * 100,
+    # evacuation zone status
+    ez = ifelse(
+      STATENAM_1990 %in% c("Arizona", "California", "Oregon", "Washington"),
+      1, 0
+      )
+    ) 
 
 # bind distances to 
 main_data <- left_join(demographics_crosswalked, ctycmpdist_shp, by = "id1990")

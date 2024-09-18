@@ -12,7 +12,7 @@ data <- read_csv("data/data.csv")
 ```{r}
 library(stargazer)
 data %>% 
-  select(pop, mig, migratio, AGE, INCWAGE, unmp_rate, campclosest_dist) %>%
+  select(pop, mig, migratio, y, AGE, INCWAGE, unmp_rate, campclosest_dist) %>%
   as.data.frame() %>% 
   stargazer(
     # type = "text", 
@@ -20,8 +20,9 @@ data %>%
     title = "County-Year Summary Statistics",
     label = "ctysumstats",
     covariate.labels = c(
-      "Population", "New Migrants", "Migrant/Pop Ratio", "Average Age", 
-      "Average Wage", "Unemployment Rate", "Distance to Closest Camp"
+      "Population", "New Migrants", "Migrant/Pop Ratio", 
+      "Japanese/Total Migration Ratio", "Average Age", "Average Wage",
+      "Unemployment Rate", "Distance to Closest Camp"
     ),
     digits = 2
   )
