@@ -1,21 +1,22 @@
 
 library(tidyverse)
-library(ipumsr)
 library(labelled)
-library(geos)
-library(data.table)
+library(ipumsr)
 library(sf)
 
 #----MIGRATIONS----
 
 # Read from downloaded ddi file after running download-data.R
-ipums_ddi <- list.files(path = "data/census", pattern = "*.xml")
+ipums_ddi <- list.files(path = "data/census", pattern = "*.xml") %>%
+  # in case of multiple files, choose most recent
+  sort(decreasing = TRUE) %>%
+  head(1)
 
 # read ipums microdata and identify inter-county migrants
 ipumsmicro_df <- read_ipums_micro(paste("data/census/", ipums_ddi, sep = "")) %>% 
-  filter(COUNTYICP != 0) %>% # subset with location identified
   mutate(
-    IsMigrant = ((MIGRATE5 %in% c(2,3,4)) | (MIGRATE1 %in% c(2,3,4))) ,
+    i_countyid = ifelse(COUNTYICP != 0, 1, 0), # is county identified?
+    i_migrant = ((MIGRATE5 %in% c(2,3,4)) | (MIGRATE1 %in% c(2,3,4))) ,
     # Recode ipums variables
     INCWAGE = ifelse(INCWAGE == 999999, NA, INCWAGE), 
     INCTOT = ifelse(INCTOT == 9999999, NA, INCTOT), 
@@ -26,15 +27,16 @@ ipumsmicro_df <- read_ipums_micro(paste("data/census/", ipums_ddi, sep = "")) %>
   )
 
 # shorten race category names for column names
-val_labels(ipumsmicro_df$RACE) <- c( white = 1, black = 2, aian  = 3,  chin  = 4,
-                                     japn  = 5, oapi  = 6, other = 7,  multi = c(8,9) )
+val_labels(ipumsmicro_df$RACE) <- 
+  c( white = 1, black = 2, aian  = 3,  chin  = 4, 
+     japn  = 5, oapi  = 6, other = 7,  multi = c(8,9) )
 
 # create county-year-race summary statistics
 demographics_race <- ipumsmicro_df %>% 
   group_by(YEAR, STATEFIP, COUNTYICP, RACE) %>% 
   summarise(
     pop      = sum(PERWT), 
-    mig      = sum(IsMigrant * PERWT),
+    mig      = sum(i_migrant * PERWT),
     migratio = mig/pop,
     across( # weight demographics by census person weight
       c(AGE, INCWAGE, INCTOT, i_female, i_unemployed, i_labforce, i_issei),
@@ -56,7 +58,7 @@ demographics_county <- ipumsmicro_df %>%
   group_by(YEAR, STATEFIP, COUNTYICP) %>% 
   summarise(
     pop      = sum(PERWT), 
-    mig      = sum(IsMigrant * PERWT),
+    mig      = sum(i_migrant * PERWT),
     migratio = mig/pop,
     across( # weight demographics by census person weight
       c(AGE, INCWAGE, INCTOT, i_female, i_unemployed, i_labforce, i_issei),
@@ -72,6 +74,15 @@ demographics_df <-
     demographics_county, demographics_race,
     by = c("YEAR", "STATEFIP", "COUNTYICP")
     ) %>%
+  mutate(
+    # outcome: migration percentage of japanese to total new migrants
+    y = mig_japn / mig * 100,
+    # evacuation zone status
+    ez = ifelse(
+      to_factor(STATEFIP) %in% c("Arizona", "California", "Oregon", "Washington"),
+      1, 0
+      )
+    ) %>%
   # need an extra zero to go from STATEFIPS to NHGISST
   mutate(id = STATEFIP * 100000 + COUNTYICP) 
 
@@ -79,7 +90,10 @@ write_csv(demographics_df, file = "./data/demographics.csv")
 
 #----DISTANCES----
 
-nhgis_shape <- list.files(path = "data/maps", pattern = "*_shape.zip")
+nhgis_shape <- list.files(path = "data/maps", pattern = "*_shape.zip") %>%
+  # in case of multiple files, choose most recent
+  sort(decreasing = TRUE) %>%
+  head(1)
 
 county_1990_shp <- read_ipums_sf(paste("data/maps/", nhgis_shape, sep = "")) %>%
   filter( ! STATENAM %in% c("Alaska", "Hawaii") )
