@@ -73,7 +73,7 @@ attainment \citep{saavedra_school_2015} because of internment.
 
 \begin{figure}
     \centering
-    \includegraphics[width=1.0\linewidth]{figures/PioCrtInternmentMap.jpg}
+    \includegraphics[width=.8\linewidth]{figures/PioCrtInternmentMap.jpg}
     \caption{Caption}
     \label{fig:internment_map}
 \end{figure}
@@ -123,13 +123,12 @@ Population}\label{initial-distribution-of-pre-war-japanese-population}
 Camps}\label{assignment-of-internees-to-camps}
 
 \begin{center}
-\includegraphics[width=1.0\textwidth]{figures/WRAzonesmap.png}
+\includegraphics[width=.8\textwidth]{figures/WRAzonesmap.png}
 \end{center}
-
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
 \section{Data}\label{data}
 
+I combine historical census data, geographical references, and archived internment camp records to create the final pooled cross-section of county-year-level observations that I use in my later analysis. 
 
 \subsection{Population and Migration}\label{population-and-migration}
 
@@ -144,9 +143,9 @@ Metro 1\% sample.
 For the calculation of migration rates between counties, I define a
 migrant as someone who reports that they either moved within the state,
 between states, or that they were abroad five years ago (or in the past
-1 year for 1960 respondants). This excludes people who report moving
-within the same house, didn't report their previous location, or the
-location is unknown.
+1 year for 196l respondents). This excludes people who report moving
+within the same house, didn't report their previous location, or when their
+location was reported as unknown.
 
 \subsection{Geography}\label{geography}
 
@@ -159,9 +158,9 @@ reasons, I use the county boundaries as they appeared in the 1990 census.
 
 % *** Maybe include figure to show some counties changing over time?
 
-To map historical county-level data to 1990 county definitions, I implement the crosswalk
+To standardize historical county-level data to 1990 county definitions, I implement the crosswalk
 method by \cite{eckert_method_2020}. They overlay historical
-county boundary shapefiles from \href{NHGIS}{https://www.nhgis.org/}
+county boundary shapefiles from \href{https://www.nhgis.org/}{NHGIS}
 onto county boundaries for a specific target year (in this case 1990).
 The sub-areas created by these overlays are used to calculate a set of
 geographic weights which represent the fractions of a 1990 county's area
@@ -172,25 +171,46 @@ csv file for the end year 1990 which is published on the authors'
 \href{https://github.com/liang-jack-a/EGLP_Crosswalk/tree/master}{github
 repository}.
 
-%\includegraphics[width=1.0\textwidth]{main_files/figure-pdf/unnamed-chunk-1-1.pdf}
+For the actual geographics boundaries of 1990 counties, I download the US county boundary shapefiles for the \href{https://www.census.gov/geographies/mapping-files/time-series/geo/tiger-line-file.html}{2008 TIGER/Line} basis from \url{nhgis.org} via the IPUMS NHGIS extract system.
+
+I limit my data set to counties within the continental US, as Alaska and Hawaii were not yet states in 1940 and also because the effect of physical distance on migration is likely different for non-contiguous land areas.
+
 
 \subsubsection{Camp Locations}\label{camp-locations}
 
-Locations for historical interment camp locations were archived by
+Locations for historical interment camp locations were originally archived by
 \href{http://encyclopedia.densho.org/War_Relocation_Authority/\#Planning_the_Camps}{Densho
-Encyclopedia} and downloaded in csv form via the
+Encyclopedia} and I downloaded these records in csv form via the
 \href{https://www.arcgis.com/home/item.html?id=69183af8d45d4f46a9dc4eba99440891}{Behind
-Barbed Wires story project}.
+Barbed Wires} story project's website
+(\cite{chrkan_behind_2019}, \cite{robinson_war_2023}).
 
-\includegraphics[width=1.0\textwidth]{figures/countymap.png}
+I use the \texttt{sf} package in \texttt{R} to georeference the latitude-longitude coordinates from these records and project them to the same Coordinate Reference System used for the NHGIS shapefiles \citep{pebesma_simple_2018}.
+\footnote{NHGIS uses the Contiguous Albers Equal Area Conic projection.}
+This allows me to use the \texttt{st\_distance} function to obtain the distance matrix between all county-camp pairs and then select the closest camp to each county and the associated distance for my main independent variable.
 
-I calculate the straight line distances in meters between each 1950
-county centroid to each camp location in QGIS with the
-\texttt{Distance\ Matrix} tool using the Standard (N x T) distance
-matrix setting.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{figures/countymap.png}
+    \caption{WRA internment camp locations with 1990 counties and their distances to each camp}
+    \label{fig:countymap}
+\end{figure}
+
+Figure \ref{fig:countymap} shows the relationship between the internment camp locations and county boundaries. 
+Each of the red dots represents the historical location of one of the ten WRA internment camps. 
+From West to East they are:
+Tule Lake and Manzanar, California;
+Gila River, Arizona;
+Minidoka, Idaho;
+Topaz, Utah;
+Heart Mountain, Wyoming,
+Amache, Colorado;
+and
+Jerome and Rohwer, Arkansas.
 
 \subsection{Historical counties
 dataset}\label{historical-counties-dataset}
+\include{tables/ctysumstats}
 
 After narrowing down to counties which can be observed in each census
 year and then translating the historical counties to 1990 county
@@ -199,7 +219,7 @@ in 1940, 108 in 1950, 410 in 1960, 115 in 1970, 254 in 1980, and 290 in
 1990.
 
 My primary dataset is therefore a pooled-crossection with a total number
-of 28 county-year level observations. Each observation represents an
+of 4,257 county-year level observations. Each observation represents an
 individual county at a given year in time if it had the same borders as
 it had in 1990.
 
@@ -209,13 +229,15 @@ than 100,000 people. For this reason, many sparsely-populated counties
 will be omitted from my sample because there are not enough observations
 for the Census to report locations of individuals living there.
 
+All county-level observations in my final dataset are created by first taking the weighted average of each variable across all individuals who have an identifiable address within any county 
+
 \phantomsection\label{cell-fig-comparesamplepops}
 \begin{figure}[H]
 \centering{
-% \includegraphics[width=1.0\textwidth]{figures/fig-comparesamplepops-1.pdf}
+ \includegraphics[width=.8\textwidth]{figures/fig-comparesamplepops-1.png}
 }
 \caption{\label{fig-comparesamplepops}County-year level population
-distributions}
+distributions for identifiable (insample = TRUE) and for counties which are not in the final sample (insample = FALSE)}
 \end{figure}%
 
 The average population of the census-year observations in my sample is
@@ -233,46 +255,6 @@ populations of greater than 100,000 meet the Census Bureau's
 confidentiality criteria, while data from smaller counties are subject
 to stricter confidentiality measures.
 
-\subsection{WRA first addresses}\label{wra-first-addresses}
-
-\begin{itemize}
-
-\item
-  {\emph{The Evacuated People: A Quantitative Descripton}}
-  \cite{krug_evacuated_1946}
-
-  \begin{itemize}
-  
-  \item
-    Final WRA report on ``State and Post Office Address of First
-    Destination by Nativity, Prior January 1, 1945 and January 1, 1945
-    and Later''
-  \item
-    Digitized and uploaded by \href{https://cooper-thomas.com/}{Cooper Thomas} 
-    via \href{https://data.world/infinitecoop/japanese-internment-camps}{data.world}
-  \end{itemize}
-\end{itemize}
-
-\subsubsection{Map of Relocated Internees by City}
-\label{map-of-relocated-internees-by-city}
-
-\subsection{WRA internees}\label{wra-internees}
-
-\includegraphics[width=1.0\textwidth]{figures/wra-internee-cohorts.png}
-
-\subsection{IPUMS Census}\label{ipums-census}
-
-\begin{itemize}
-
-\item
-  Decennial Census Data for years 1940, 1950, 1960, 1970, 1980, and 1990
-
-  \begin{itemize}
-  
-  \item
-    Via IPUMS USA \citep{ruggles_ipums_2024}
-  \end{itemize}
-\end{itemize}
 
 \includegraphics[width=1.0\textwidth]{figures/shareareaplot.png}
 
