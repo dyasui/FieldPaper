@@ -71,13 +71,6 @@ West Coast Japanese suffered higher rates of mortality lower long-term earnings
 \citep{chin_longrun_2005}, \citep{saavedra_early_2013}, and less educational
 attainment \citep{saavedra_school_2015} because of internment. 
 
-\begin{figure}
-    \centering
-    \includegraphics[width=.8\linewidth]{figures/PioCrtInternmentMap.jpg}
-    \caption{Caption}
-    \label{fig:internment_map}
-\end{figure}
-
 Aside from the importance of understanding the losses to internees, Japanese
 Internment can also serve as an interesting natural experiment through the
 involuntary nature of the experiences of internees. One question asked by
@@ -119,12 +112,6 @@ Population}\label{initial-distribution-of-pre-war-japanese-population}
 \includegraphics[width=1.0\textwidth]{figures/county_JAmap.png}
 \end{center}
 
-\subsection{Assignment of Internees to
-Camps}\label{assignment-of-internees-to-camps}
-
-\begin{center}
-\includegraphics[width=.8\textwidth]{figures/WRAzonesmap.png}
-\end{center}
 
 \section{Data}\label{data}
 
@@ -189,6 +176,10 @@ I use the \texttt{sf} package in \texttt{R} to georeference the latitude-longitu
 \footnote{NHGIS uses the Contiguous Albers Equal Area Conic projection.}
 This allows me to use the \texttt{st\_distance} function to obtain the distance matrix between all county-camp pairs and then select the closest camp to each county and the associated distance for my main independent variable.
 
+All county-level observations in my final dataset are created by first taking the weighted average of each variable across all individuals who have an identifiable address within any county 
+using the \texttt{PERWT} variable from IPUMS. 
+***
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=1.0\textwidth]{figures/countymap.png}
@@ -216,13 +207,8 @@ After narrowing down to counties which can be observed in each census
 year and then translating the historical counties to 1990 county
 boundaries, I am left with 4,257 county-year level observations with observable migration rates.
 However, there are many fewer observations with any data on migrations specifically by Japanese Americans.
-There are 91 counties in 1940, 108 in 1950, 410 in 1960, 115 in 1970, 254 in 1980, and 290 in 1990 for which non-missing values exist for Japanese/Total Migration Ratio.
-This variable is the main outcome in my later analysis and is defined as the 
-
-My primary dataset is therefore a pooled-crossection with a total number
-of 4,257 county-year level observations. Each observation represents an
-individual county at a given year in time if it had the same borders as
-it had in 1990.
+There are 91 counties in 1940, 23 in 1950, 268 in 1960, 106 in 1970, 175 in 1980, and 207 in 1990 for which non-missing values exist for Japanese/Total Migration Ratio.
+This variable is the main outcome in my later analysis and is defined as the number of new Japanese American migrants into the county divided by the total number of new migrants.
 
 The Census Bureau confidentiality standards state that public-use
 microdata will cannot show report locations with populations of less
@@ -230,7 +216,6 @@ than 100,000 people. For this reason, many sparsely-populated counties
 will be omitted from my sample because there are not enough observations
 for the Census to report locations of individuals living there.
 
-All county-level observations in my final dataset are created by first taking the weighted average of each variable across all individuals who have an identifiable address within any county 
 
 \phantomsection\label{cell-fig-comparesamplepops}
 \begin{figure}[H]
@@ -255,11 +240,6 @@ in-sample density plot. This reflects the fact that counties with
 populations of greater than 100,000 meet the Census Bureau's
 confidentiality criteria, while data from smaller counties are subject
 to stricter confidentiality measures.
-
-
-\includegraphics[width=1.0\textwidth]{figures/shareareaplot.png}
-
-\subsection{NHGIS geo}\label{nhgis-geo}
 
 \section{Methods}\label{methods}
 
