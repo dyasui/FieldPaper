@@ -162,7 +162,7 @@ demographics_crosswalked <-
   summarise(across(pop:unmp_rate_other, ~ sum(.x * weight))) %>%
   mutate(
     # outcome: migration percentage of japanese to total new migrants
-    y = mig_japn / mig * 100,
+    y = mig_japn / mig,
     # evacuation zone status
     ez = ifelse(
       STATENAM_1990 %in% c("Arizona", "California", "Oregon", "Washington"),
