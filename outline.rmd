@@ -20,8 +20,8 @@ data %>%
     title = "County-Year Summary Statistics",
     label = "ctysumstats",
     covariate.labels = c(
-      "Population", "New Migrants", "New Japanese American Migrants",
-      "Current Japanese Population", "Migrant/Pop Ratio", 
+      "Population", "New Migrants", "Migrant/Pop Ratio",
+      "New Japanese American Migrants", "Current Japanese Population", 
       "Japanese/Total Migration Ratio", "Average Age", "Percent Female",
       "Average Wage", "Unemployment Rate", "Distance to Closest Camp"
     ),
