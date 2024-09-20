@@ -146,7 +146,7 @@ reasons, I use the county boundaries as they appeared in the 1990 census.
 % *** Maybe include figure to show some counties changing over time?
 
 To standardize historical county-level data to 1990 county definitions, I implement the crosswalk
-method by \cite{eckert_method_2020}. They overlay historical
+method created by \cite{eckert_method_2020}. They overlay historical
 county boundary shapefiles from \href{https://www.nhgis.org/}{NHGIS}
 onto county boundaries for a specific target year (in this case 1990).
 The sub-areas created by these overlays are used to calculate a set of
@@ -176,10 +176,6 @@ I use the \texttt{sf} package in \texttt{R} to georeference the latitude-longitu
 \footnote{NHGIS uses the Contiguous Albers Equal Area Conic projection.}
 This allows me to use the \texttt{st\_distance} function to obtain the distance matrix between all county-camp pairs and then select the closest camp to each county and the associated distance for my main independent variable.
 
-All county-level observations in my final dataset are created by first taking the weighted average of each variable across all individuals who have an identifiable address within any county 
-using the \texttt{PERWT} variable from IPUMS. 
-***
-
 \begin{figure}[H]
     \centering
     \includegraphics[width=1.0\textwidth]{figures/countymap.png}
@@ -203,12 +199,27 @@ Jerome and Rohwer, Arkansas.
 dataset}\label{historical-counties-dataset}
 \include{tables/ctysumstats}
 
+All county-level observations in my final dataset are created by first taking the weighted average of each variable across all individuals who have an identifiable address within any county 
+using the \texttt{PERWT} variable from IPUMS. 
+Then I use the crosswalk weights from section \ref{historical-county-borders} to match data from historical counties on to the set of 1990 counties. 
+
 After narrowing down to counties which can be observed in each census
 year and then translating the historical counties to 1990 county
 boundaries, I am left with 4,257 county-year level observations with observable migration rates.
 However, there are many fewer observations with any data on migrations specifically by Japanese Americans.
 There are 91 counties in 1940, 23 in 1950, 268 in 1960, 106 in 1970, 175 in 1980, and 207 in 1990 for which non-missing values exist for Japanese/Total Migration Ratio.
 This variable is the main outcome in my later analysis and is defined as the number of new Japanese American migrants into the county divided by the total number of new migrants.
+
+\begin{figure}[!h]
+    \centering
+    \includegraphics[width=0.8\linewidth]{figures/migrationmap.png}
+    \caption{Japanese American migrations observable in each county for each census year}
+    \label{fig:migrationmap}
+\end{figure}
+
+Figure \ref{fig:migrationmap} displays only the county-year observations for which there is any data available for any Japanese Americans who report moving into that county recently. 
+
+\subsubsection{Representation of this Dataset}
 
 The Census Bureau confidentiality standards state that public-use
 microdata will cannot show report locations with populations of less
@@ -243,22 +254,36 @@ to stricter confidentiality measures.
 
 \section{Methods}\label{methods}
 
-\subsection{immigration on dist to
-camps}\label{immigration-on-dist-to-camps}
+To see whether the placement of camps during internment lead to any changes in the patterns of Japanese migration within the continental US, I estimate the correlation between the distance to the closest camp from a county with the ratio of new immigrants who's race is Japanese. 
 
-\begin{equation}
-    \frac{mig\_japn_{it}}{mig\_total_{it}} = \beta_0 + \beta_1 \min_{c\in C} Dist^{c\rightarrow i} 
-+ \mathbb{X}_{ct} \gamma +  \epsilon_{ct}
+\begin{equation}\label{eq:basicreg}
+    \frac{mig\_japn_{it}}{mig\_total_{it}} = \beta_0 + \beta_1 Log(Distance)_i  +  \epsilon_{it}
 \end{equation}
 
-\subsubsection{within cont. US migration of japanese
-americans}\label{within-cont.-us-migration-of-japanese-americans}
 
-\subsubsection{new immigration from
-japan}\label{new-immigration-from-japan}
+Equation \ref{eq:basicreg} outlines the more basic version of this relationship. 
+The outcome variable, $\frac{mig\_japn_{it}}{mig\_total_{it}}$, is the number of new Japanese migrants into county $i$ in census year $t$ divided by the total number of new migrants into county $i$ of any race.
+The single independent variable, $Log(Distance)_i$, is the log of the distance in meters from county $i$ to the camp closest to that county.
 
-\subsection{individual-level characteristics vs
-internees?}\label{individual-level-characteristics-vs-internees}
+The linear parameter $\beta_0$ represents the ratio of Japanese migrants that this model predicts for a county that contains a camp (mathematically with a distance of 1 meter).
+The parameter $\beta_1$ is the estimated amount that the ratio of Japanese to all migrants would increase for each 1\% increase in distance of a county away from the closest camp.
+$\epsilon_{it}$ is the county-year level error term.
+
+This model will not return the true causal effect of camp placement on migration outcomes if the choice of where to put the camps was itself affected by existing patterns of Japanese demographics.
+One possible source of reverse-causality could come from the fact that, as illustrated in figure \ref{fig:countymap},
+WRA camps were constructed close to the West Coast where the majority of the Japanese American population were already living. 
+This means that West Coast counties would more likely to see higher rates of migration of this existing population than counties where no prior communities exist even in the absence of internment. 
+
+While I do not claim to establish an unbiased causal estimate in this paper, 
+I do add another variable to somewhat account for the endogenous placement of internment camps in equation \ref{eq:ezreg}.
+
+\begin{equation}\label{eq:ezreg}
+    \frac{mig\_japn_{it}}{mig\_total_{it}} = \beta_0 + \beta_1 Log(Distance)_i + \beta_2 EZ_i + \beta_3 Log(Distance)_i * EZ_i +  \epsilon_{it}
+\end{equation}
+
+The variable $EZ_i$ is an indicator variable which is equal to 1 for counties within the Evacuation Zone and 0 otherwise.
+$\beta_2$ represents the difference in expected migration rates between counties in and out of the Evacuation Zone.
+
 
 \section{Results}\label{results}
 
