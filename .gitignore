@@ -21,3 +21,6 @@ data/*
 .Rproj.user
 
 /.quarto/
+
+### Temporary WIP: ###
+R/1940fullcount.R

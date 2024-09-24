@@ -64,11 +64,12 @@ This should create the files:
 
 ### Summarize and visualize the data
 ```bash
-Rscript -e "outline.rmd"
+R CMD BATCH R/figures.R R/tables.R
 ```
 
 Should create a sum stats table 
   - `tables/ctysumstats.tex`
+
 and some figures
   - `figures/countymap.png`
   - `figures/migrationmap.png`

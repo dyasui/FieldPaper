@@ -3,10 +3,16 @@ library(ipumsr)
 library(labelled)
 library(sf)
 
+# read data to plot
+data <- read_csv("data/data.csv")
 county_1990_shp <- read_ipums_sf("data/maps/*_shape.zip")
 
-#---- Distances Map
-load("data/ctycmpdist.RData")
+# read shapefiles and append distances
+county_1990_shp <- read_ipums_sf("data/maps/nhgis0025_shape.zip") %>%
+  filter( ! STATENAM %in% c("Alaska", "Hawaii") ) %>%
+  mutate(id1990 = as.numeric(NHGISST) * 10000 + as.numeric(NHGISCTY)) %>%
+  left_join(read_csv("data/distances.csv"), by = c("id1990"))
+
 camplocations_df <- 
   read_csv("data/BehindBarbedWire_StoryMap/BehindBarbedWire_StoryMap_InternmentCampLocationsMap_Data.csv") %>% 
   st_as_sf(
@@ -18,48 +24,44 @@ camplocations_df <-
     geometry = st_transform(geometry, crs = st_crs(county_1990_shp$geometry))
     )
 
-ggplot() + 
-  geom_sf( data = ctycmpdist_shp, aes(fill = campclosest_dist) ) +
-  geom_sf( data = camplocations_df, aes(color = "red"))
-  scale_fill_continuous() +
-  theme_minimal()
-
-#---*from Data.qmd*---#
-
-#---- read cleaned census dataset ----#
-
-county1940_df <- countyyr_df %>% filter(Year==1940)
-
-# plot(county1940_df$geo, col = pop_total)
-
-county_map <- ggplot(data = county1940_df) +
-  geom_sf(aes(geometry = geometry)) +
+countymap <- ggplot( data = county_1990_shp) +
+  geom_sf( aes(geometry = geometry) ) +
   theme_void()
 
-county_map + 
-  geom_sf(aes(geometry = geometry, fill = migratio_total), size = 0.1) +
-  scale_fill_viridis_c() 
+unlink("figures/countymap.png")
+distancesmap <- countymap + 
+  geom_sf( aes(fill = campclosest_dist) ) +
+  geom_sf( data = camplocations_df, aes(color = "red"), show.legend = FALSE) +
+  labs(
+    title = "Internment Camp Locations and Distances to Counties",
+    fill = "Distance from county to closest camp (m)",
+  ) + 
+  viridis::scale_fill_viridis()
+ggsave("figures/countymap.png", plot = distancesmap, dpi = 350)
 
-#---- calculate distances to each camp ----#
-
-#---- summarise crosswalked counties by pop ----#
-county_sample <- census_df %>% 
-  select(Year, id1990) %>%
-  unite(ctyr_id, c("id1990","Year"), remove = TRUE) %>% 
-  pull()
-
-# crosswalk historical county population tables from nhgis to 1990 counties
-countypop_df <- read_csv(here::here("data/census/nhgis0019_csv/nhgis0019_ts_nominal_county.csv")) %>%
-  mutate(id = as.numeric(STATENH)*10000 + as.numeric(COUNTYNH)) %>% 
-  right_join(crosswalk, .,
-           by = c("id", "Year"="YEAR"),
-           relationship = "many-to-many") %>%
-  group_by(Year, id1990, STATENAM_1990, NHGISNAM_1990) %>%
-  summarise(pop = sum(A00AA * weight)) %>% 
-  ungroup() %>% 
-  unite(ctyr_id, c("id1990","Year"), remove = FALSE)
-
-countypop_df <- countypop_df %>% 
-  mutate(
-    insample = (ctyr_id %in% county_sample)
+migrationsmap <- data %>% 
+  left_join(county_1990_shp, by = "id1990") %>% 
+  ggplot(data = .) +
+  geom_sf(aes(geometry = geometry, fill = mig_japn)) + 
+  labs(
+    title = "Japanese Migration Patterns over Time",
+    fill = "Number of new Japanese-American migrants"
+  ) +
+  facet_wrap(vars(Year)) +
+  viridis::scale_fill_viridis() +
+  theme_void() +
+  theme(
+    legend.position = "bottom",
+    legend.title.position = "top"
   )
+ggsave("figures/migrationmap.png", plot = migrationsmap, dpi = 350)
+
+# Relationship of dist, migratio, and ez
+data %>% 
+  ggplot(data = ., 
+    aes(x = log(campclosest_dist), y = y, group = as.factor(ez))
+  ) +
+  geom_point(aes(color = as.factor(ez))) +
+  geom_smooth(method = "lm", aes(color = as.factor(ez))) +
+  facet_wrap(vars(Year)) +
+  ylim(0.0,0.2)
