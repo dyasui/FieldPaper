@@ -103,3 +103,15 @@ ggsave("figures/migrationmap.png", plot = migrationsmap, dpi = 350)
 
 ``` 
 
+## Relationship of Dist, migratio, and ez
+```{r}
+data %>% 
+  ggplot(data = ., 
+    aes(x = log(campclosest_dist), y = y, group = as.factor(ez))
+  ) +
+  geom_point(aes(color = as.factor(ez))) +
+  geom_smooth(method = "lm", aes(color = as.factor(ez))) +
+  facet_wrap(vars(Year)) +
+  ylim(0.0,0.2)
+
+```

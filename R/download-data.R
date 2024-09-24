@@ -48,28 +48,35 @@ define_extract_nhgis(
     wait_for_extract() %>%
     download_extract(download_dir = "./data/maps/")
 
-# ---- FULL COUNT 1940 & 1950 CENSUS ----
-# fullcount_samples <- get_sample_info("usa") %>% 
-#   filter( description %in% c( "1940 100% database", "1950 100% database" )) %>%
-#   select(name) %>% pull()
-#
-# # migration variables not available for 1950 100% database
-# variables <- list(
-#   "YEAR"     , "PERWT"    , 
-#   "STATEFIP" , "STATEICP" , "COUNTYICP" , "METAREA"  , "CITY"     , 
-#   # "MIGRATE5" , "MIGPLAC5" , "MIGRATE1"  , "MIGPLAC1" ,
-#   "RACE"     , "BPL"      , "AGE"       , "SEX",
-#   "EMPSTAT"  , "LABFORCE" , "INCWAGE"   , "INCTOT"   , "OCCSCORE" 
-# )
-#
-# # Submit extract and download
-# fullcount_download <- define_extract_usa(
-#   description = "full-count census data for years 1940 and 1950",
-#   samples = fullcount_samples,
-#   variables = variables) %>%
-#   submit_extract() %>%
-#   wait_for_extract() %>%
-#   download_extract(download_dir = "data/census")
+# ---- NHGIS 1940 county border shapefiles ---- #
+
+define_extract_nhgis(
+    description = "NHGIS shapefile for 1940 county boundaries",
+    shapefiles = "us_county_1940_tl2008" ) %>%
+    submit_extract() %>%
+    wait_for_extract() %>%
+    download_extract(download_dir = "./data/maps/1940/")
+
+# ---- FULL COUNT 1940 ----
+fullcount_samples <- get_sample_info("usa") %>% 
+  filter( description %in% c( "1940 100% database" )) %>%
+  select(name) %>% pull()
+
+# migration variables not available for 1950 100% database
+variables <- list(
+  "YEAR"     , "PERWT"    , 
+  "STATEFIP" , "STATEICP" , "COUNTYICP" , 
+  "NATIVITY" , "RACE"     , "BPL"       , "AGE" , "SEX"
+)
+
+# Submit extract and download
+fullcount_download <- define_extract_usa(
+  description = "full-count census data for years 1940",
+  samples = fullcount_samples,
+  variables = variables) %>%
+  submit_extract() %>%
+  wait_for_extract() %>%
+  download_extract(download_dir = "data/fullcount")
 
 # ---- NHGIS SHAPEFILES ----
 # Download county shapefiles with IPUMS api: ----
