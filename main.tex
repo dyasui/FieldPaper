@@ -1,6 +1,6 @@
 \documentclass[12pt]{article} 
 \usepackage[nohead]{geometry}
-\usepackage[singlespacing]{setspace}
+\usepackage[onehalfspacing]{setspace}
 \usepackage[bottom]{footmisc}
 \usepackage{indentfirst}
 \usepackage{multirow}
@@ -11,6 +11,7 @@
 \renewcommand{\tabular}{\large\oldtabular}
 \usepackage{caption}
 \usepackage{hyperref}
+\usepackage{pdfpages}
 \hypersetup{
     pdftitle={FieldPaper},
     colorlinks=true,
@@ -26,53 +27,80 @@
 %\setlength\bibhang{0.5in}
 \usepackage{float}
 
-\newenvironment{proof}[1][Proof]{\noindent\textbf{#1.} }{\ \rule{0.5em}{0.5em}}
-\newcommand{\pd}[2]{\frac{\partial#1}{\partial#2}}
-\makeatletter
-\def\@biblabel#1{\hspace*{-\labelsep}}
-\makeatother
-\geometry{left=1in,right=1in,top=1in,bottom=1in}
-
-
 \title{Ethnic Enclaves and the Legacy of Internment}
 \author{Dante Yasui}
 \date{\today}
 
 \begin{document}
+
+\includepdf[]{Field-Paper-Title-and-Signature-Page.pdf}
+
 \maketitle
 
 \section{Intro}\label{intro}
 
 \subsection{Research Question}\label{research-question}
 
-\begin{itemize}
+In this paper, I examine a population who were temporarily and involuntarily
+relocated  and I describe their later migration patterns.
 
-\item
-  Did post-war relocation cause a permanent shift in the migration
-  choices of Japanese Americans?
-\end{itemize}
+Specifically, I focus ask counties which were closer to internment camps
+established during World War II had higher rates of migration among the Japanese
+American population affected by internment.
 
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+I use public-use census data from the decades 1940 to 1990 to compare the rates
+of Japanese American migration out of total migration for counties in the
+mainland US which had different geographical exposure to the relocation orders
+during the war.
 
-\subsection{Motivation}\label{motivation}
+While I find that the locations chosen to build camps were endogenous to
+existing clustering of Japanese Americans (and migrants), the correlation
+between the relative proportion of Japanese American migrants to these locations
+seems to decrease in strength over time. I also find that there seems to be a
+different direction of the effect of camp distance to migration ratios depending
+on whether the counties were included in the areas which were subject to
+relocation orders.
 
-In the aftermath of Pearl Harbor over 100,000 Japanese Americans were subjected
-to curfews, forced to assemble in temporary centers, and imprisoned in
-internment camps from 1942 until the war's end. These families lost out on
-years of earnings and education while also being forced to give up land and
-belongings which they could not bring with them. The economic damages were
-known to be large at the time, with the Japanese American Evacuation Claims Act
-of 1948 leading to a total of \$148 million worth of claims on damage or lost
-property and \$37 million actually being distributed
-\citep{commission_on_wartime_relocation_personal_1983}. 
-Because interned families also left behind their records, it is very difficult to know the
-actual value of lost property. However, there is modern causal evidence that
-West Coast Japanese suffered higher rates of mortality lower long-term earnings
+\subsection{Historical Context}\label{history}
+
+\href{https://www.archives.gov/milestone-documents/executive-order-9066}{Executive Order 9066} 
+was signed on February 19, 1942 and granted the Secretary of War the authority
+to designate military areas from which civilians could be prevented access. This
+order was used to target all persons of Japanese descent living in the so-called
+`Evacuation Zone' which included all of California, and large areas of
+Washington, Oregon, and Arizona shown in blue in figure \ref{fig:internmentmap}.
+At first, the Secretary of War Henry Stimson encouraged some families to
+voluntarily leave the West Coast, but starting at the end of March 1942, the
+Wartime Civil Control Administration (WCCA) and War Relocation Authority (WRA)
+were established to remove all remaining Japanese Americans to temporary
+Assembly Centers which were makeshift shelters in close proximity to the
+population centers where these people were living. As the more permanent WRA
+Relocation Centers reached completion in May 1942, all Japanese Americans left
+in the West Coast were moved from Assembly Centers to Relocation Centers by
+train. This process lasted until November of 1942
+\citep{commission_on_wartime_relocation_personal_1983}.
+
+After two years of WRA camp operations, the government began to debate how to
+end the evacuation orders towards the end of 1944. One statement issued on
+December 9 illustrates that one of the initial goals of interment was actually
+to cause a permanent shift in the Japanese American population away from the
+West Coast as part of a wide-scale program of `deghettoization':
+\begin{quote}
+  ``One of the major WRA aims, from the beginning, has been to encourage the widest possible dispersal of evacuees throughout the Nation, and this will continue as a prime objective during the final phase of the program.''
+  (\cite{commission_on_wartime_relocation_personal_1983}, page 234)
+\end{quote}
+
+As seen in figure \ref{fig:1940JAmap}, over 90\% of the 1940 Japanese American
+population lived in areas which would become subject to relocation orders.
+
+\subsection{Motivating Literature}\label{motivation}
+
+Existing research on the economic impacts on internees has found that
+West Coast Japanese suffered higher rates of mortality, lower long-term earnings
 \citep{chin_longrun_2005}, 
 \citep{saavedra_early_2013},
 and less educational attainment 
-\citep{saavedra_school_2015} 
-because of internment. 
+\citep{saavedra_school_2015}. 
 
 Aside from the importance of understanding the losses to internees, Japanese
 Internment can also serve as an interesting natural experiment through the
@@ -88,33 +116,28 @@ through leveraging other exogenous placements of households like the Moving to
 Opportunity Experiment (\cite{ludwig_long-term_2013},
 \cite{chetty_effects_2016}, etc). 
 
-\begin{itemize}
-\item
-  Immigrant populations tend to concentrate near places of initial
-  settlement
-\item
-  Integration/assimilation could be important for immigrant labor market
-  outcomes
-
-  \begin{itemize}
-  
-  \item
-    \cite{damm_ethnic_2009}
-  \end{itemize}
-\item
-  Evidence for Canadian Japanese internment having persistant effect on
-  spatial Japanese distribution
-\item
-  \cite{chan_forced_2022}
-\end{itemize}
+% \begin{itemize}
+% \item
+%   Immigrant populations tend to concentrate near places of initial
+%   settlement
+% \item
+%   Integration/assimilation could be important for immigrant labor market
+%   outcomes
+% 
+%   \begin{itemize}
+%   
+%   \item
+%     \cite{damm_ethnic_2009}
+%   \end{itemize}
+% \item
+%   Evidence for Canadian Japanese internment having persistant effect on
+%   spatial Japanese distribution
+% \item
+%   \cite{chan_forced_2022}
+% \end{itemize}
 
 \subsection{Initial Distribution of pre-war Japanese
 Population}\label{initial-distribution-of-pre-war-japanese-population}
-
-\begin{center}
-\includegraphics[width=1.0\textwidth]{figures/county_JAmap.png}
-\end{center}
-
 
 \section{Data}\label{data}
 
@@ -136,7 +159,7 @@ One issue with comparing migration rates across years using census data is what 
 However, in 1950 this question became
 ``Was [this household member] living in this same county a year ago?''
 before switching back to asking about residence five years ago (instead of one) in all subsequent censuses.
-\footnote{As documented in the IPUMS variable description page: \url{https://usa.ipums.org/usa-action/variables/MIGRATE5#description_section}}
+\footnote{As documented in the IPUMS variable description page: \url{https://usa.ipums.org/usa-action/variables/}}
 
 Another problem with using 1950 responses to the migration question is that 
 this census only this to `sample line' individuals, not to everyone.
@@ -193,13 +216,6 @@ I use the \texttt{sf} package in \texttt{R} to georeference the latitude-longitu
 \footnote{NHGIS uses the Contiguous Albers Equal Area Conic projection.}
 This allows me to use the \texttt{st\_distance} function to obtain the distance matrix between all county-camp pairs and then select the closest camp to each county and the associated distance for my main independent variable.
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1.0\textwidth]{figures/countymap.png}
-    \caption{WRA internment camp locations with 1990 counties and their distances to each camp}
-    \label{fig:countymap}
-\end{figure}
-
 Figure \ref{fig:countymap} shows the relationship between the internment camp locations and county boundaries. 
 Each of the red dots represents the historical location of one of the ten WRA internment camps. 
 From West to East they are:
@@ -214,7 +230,6 @@ Jerome and Rohwer, Arkansas.
 
 \subsection{Historical counties
 dataset}\label{historical-counties-dataset}
-\include{tables/ctysumstats}
 
 All county-level observations in my final dataset are created by first taking the weighted average of each variable across all individuals who have an identifiable address within any county 
 using the \texttt{PERWT} variable from IPUMS. 
@@ -227,13 +242,6 @@ However, there are many fewer observations with any data on migrations specifica
 There are 91 counties in 1940, 23 in 1950, 268 in 1960, 106 in 1970, 175 in 1980, and 207 in 1990 for which non-missing values exist for Japanese/Total Migration Ratio.
 This variable is the main outcome in my later analysis and is defined as the number of new Japanese American migrants into the county divided by the total number of new migrants.
 
-\begin{figure}[!h]
-    \centering
-    \includegraphics[width=1.0\linewidth]{figures/migrationmap.png}
-    \caption{Japanese American migrations observable in each county for each census year}
-    \label{fig:migrationmap}
-\end{figure}
-
 Figure \ref{fig:migrationmap} displays only the county-year observations for which there is any data available for any Japanese Americans who report moving into that county recently. 
 
 \subsubsection{Representation of this Dataset}
@@ -244,15 +252,6 @@ than 100,000 people. For this reason, many sparsely-populated counties
 will be omitted from my sample because there are not enough observations
 for the Census to report locations of individuals living there.
 
-
-\phantomsection\label{cell-fig-comparesamplepops}
-\begin{figure}[H]
-\centering{
- \includegraphics[width=.8\textwidth]{figures/fig-comparesamplepops-1.png}
-}
-\caption{\label{fig-comparesamplepops}County-year level population
-distributions for identifiable (insample = TRUE) and for counties which are not in the final sample (insample = FALSE)}
-\end{figure}%
 
 The average population of the census-year observations in my sample is
 133,000 while the average population for
@@ -301,11 +300,10 @@ I do add another variable to somewhat account for the endogenous placement of in
 The variable $EZ_i$ is an indicator variable which is equal to 1 for counties within the Evacuation Zone and 0 otherwise.
 $\beta_2$ represents the difference in expected migration rates between counties in and out of the Evacuation Zone.
 
-*** Caveats/assumptions ***
+% *** add more about caveats/assumptions with this model
 
 \section{Results}\label{results}
 
-\include{tables/distreg}
 
 Table \ref{tbl:distreg} reports the OLS estimates from equation \ref{eq:basicreg}.
 Each column represents the parameters for each decade year $t \in \{1940, 1950, 1960, 1970, 1980, 1990\}$.
@@ -321,7 +319,6 @@ For the set of 91 counties in this regression, that would mean that a county whi
 This correlation decreases in magnitude for later decades, although the point estimates become more precise in later years where more counties are included.
 For the 1950 observations this correlation switches direction, although because of the small sub-sample included for this year, the null hypothesis that this particular estimate is non-zero cannot be rejected at the 95\% confidence level.
 
-\include{tables/ezdistreg}
 
 Table \ref{tbl:ezdistreg} includes the indicator variable for a county being located in a state subject to evacuation, $EZ$, as outlined in equation \ref{eq:ezreg}.
 For counties in 1940 outside of where the Evacuation Zone would be established (EZ=0), there is a correlation of about .7 of a percentage point reduction in the ratio of Japanese to total migrants for every 1\% increase in distance away from internment camps.
@@ -350,6 +347,14 @@ the selection of the ten locations chosen for the interment camps was likely lim
 The statistically significant and negative correlation which appears in the 1940 column of both table \ref{tbl:distreg} and table \ref{tbl:ezdistreg}
 likely is due to this endogenous spatial proximity between the existing 1940 Japanese population and the internment camp locations.
 
+I compare the results of estimating equation \ref{eq:basicreg} across years
+and find that for the post-interment years from 1960 to 1990,
+there is a persistent but decreasing negative correlation between the distance to 
+former internment camp sites and the degree to which Japanese Americans were moving 
+into those counties over time.
+This correlation is strongest in the pre-internment year 1940, where at the average levels of migration and distance,
+a coefficient of -0.411 would mean that a county which is 5.64 km closer to an internment camp than average would be expected to see an additional 
+
 As I discuss in section \ref{population-and-migration}, 
 because only sample-line individuals were asked about their migrations in 1950
 my 1950 sample of counties with measurable migration ratios is too small 
@@ -361,7 +366,63 @@ Japanese American migration patterns caused by relocation and internment.
 With the recently released full-count 1950 census data, it could be possible to gather more data to test the hypothesis that 1950 migrations by Japanese Americans were systematically different than other years,
 although even that sample still suffers from the problems of sample-line individuals and asking about one year instead of five.
 
+% ***
+% \begin{itemize}
+%     \item difference between EZ and non-EZ effects
+%     \item relate back to lit
+%     \begin{itemize}
+%         \item \cite{shoag_causal_2016}
+%         \item \cite{chan_forced_2022}
+%     \end{itemize}
+% \end{itemize}
+
+\newpage
 
 \bibliography{bibliography}
+
+\section*{Tables and Figures}
+\input{tables/ctysumstats}
+
+\input{tables/distreg}
+
+\input{tables/ezdistreg}
+
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1.0\textwidth]{figures/county_JAmap.png}
+    \caption{Spatial distribution of Japanese individuals across 1940 counties as observed in the full-count census data. Color scale is logarithmically scaled to allow for counties with small numbers of Japanese Americans to be distinguishable from counties with no Japanese populations. Counties outlined in red were part of the Evacuation Zone from which all persons of Japanese descent were prohibited between 1942 and 1945.}
+    \label{fig:1940JAmap}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1.0\textwidth]{figures/PioCrtInternmentMap.jpg}
+    \caption{Map of Exclusion Area in blue, as well as the temporary Assembly Centers in which internees were held before being relocated to the ten larger Relocation Centers, two Isolation Centers, or other facilities. Image credit: \url{https://pioneercourthouse.org/gallery-Japanese-American-Internment.html}}
+    \label{fig:internmentmap}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1.0\textwidth]{figures/countymap.png}
+    \caption{WRA internment camp locations with 1990 counties and their distances to each camp}
+    \label{fig:countymap}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=1.0\linewidth]{figures/migrationmap.png}
+    \caption{Japanese American migrations observable in each county for each census year}
+    \label{fig:migrationmap}
+\end{figure}
+
+\phantomsection\label{cell-fig-comparesamplepops}
+\begin{figure}
+\centering{
+ \includegraphics[width=.8\textwidth]{figures/fig-comparesamplepops-1.png}
+}
+\caption{\label{fig-comparesamplepops}County-year level population
+distributions for identifiable (insample = TRUE) and for counties which are not in the final sample (insample = FALSE)}
+\end{figure}%
 
 \end{document}
