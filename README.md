@@ -9,6 +9,7 @@ mkdir ./data/
 mkdir ./data/census/
 mkdir ./data/fullcount/
 mkdir ./data/maps/
+mkdir ./data/maps/1940
 ```
 
 ### Download some data from sources which I can't script
