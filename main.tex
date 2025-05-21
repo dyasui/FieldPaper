@@ -39,27 +39,47 @@
 
 \section{Intro}\label{intro}
 
-\subsection{Research Question}\label{research-question}
+% \subsection{Research Question}\label{research-question}
 
-In this paper, I examine a population who were temporarily and involuntarily
-relocated  and I describe their later migration patterns.
+In this paper I explore the long-term migration patterns of Japanese Americans 
+who were forcibly relocated during World War II.
+Specifically, I investigate whether geographic proximity to the internment camps 
+established by the War Relocation Authority (WRA)
+influenced migration rates among the Japanese American population 
+in the decades following internment.
+The central research question is
+whether counties closer to these internment camps experienced a disproportionately higher rate of Japanese American migration compared to more distant counties.
 
-Specifically, I focus ask counties which were closer to internment camps
-established during World War II had higher rates of migration among the Japanese
-American population affected by internment.
+The U.S. government’s internment policy uprooted over 100,000 Japanese Americans from their homes, 
+primarily on the West Coast,
+and placed them in camps scattered across remote areas in the Western U.S. and Arkansas.
+Following the war, 
+efforts were made to disperse the Japanese American population more widely across the U.S.,
+often discouraging their return to pre-war enclaves.
+These policies highlight the need to examine the ways in which
+forced relocation altered the traditional patterns of settlement 
+and migration within this population.
 
-I use public-use census data from the decades 1940 to 1990 to compare the rates
-of Japanese American migration out of total migration for counties in the
-mainland US which had different geographical exposure to the relocation orders
-during the war.
+To answer some of these questions, 
+I examine how the proximity of a county to a WRA internment camp correlates with the migration rates of Japanese Americans 
+relative to the total migration rates in the county.
+My analysis draws on decennial census data from 1940 to 1990,
+a period in which the effects of internment 
+can be observed in the migration choices of Japanese Americans.
 
-While I find that the locations chosen to build camps were endogenous to
-existing clustering of Japanese Americans (and migrants), the correlation
-between the relative proportion of Japanese American migrants to these locations
-seems to decrease in strength over time. I also find that there seems to be a
-different direction of the effect of camp distance to migration ratios depending
-on whether the counties were included in the areas which were subject to
-relocation orders.
+In addition to proximity to internment camps,
+this paper considers whether the effects of proximity to internment camps on migration rates 
+differed for counties located within the "Evacuation Zone"
+—the areas from which Japanese Americans were originally forced to leave.
+Did counties that were themselves part of the evacuation orders 
+exhibit different migration dynamics compared to those that were outside the zone?
+By addressing these questions, I aim to provide insight into how the legacy of internment shaped not only immediate resettlement 
+but also longer-term demographic shifts within the Japanese American community.
+
+I aim to understand whether forced displacement left lasting scars on the geography of the Japanese American population,
+and whether the government’s efforts to disperse internees resulted in a permanent reshaping of settlement patterns.
+The findings from this analysis could help shed light on the broader implications of forced migration policies 
+and provide lessons for understanding the long-term effects of similar interventions in other contexts.
 
 \subsection{Historical Context}\label{history}
 
@@ -69,8 +89,7 @@ to designate military areas from which civilians could be prevented access. This
 order was used to target all persons of Japanese descent living in the so-called
 `Evacuation Zone' which included all of California, and large areas of
 Washington, Oregon, and Arizona shown in blue in figure \ref{fig:internmentmap}.
-At first, the Secretary of War Henry Stimson encouraged some families to
-voluntarily leave the West Coast, but starting at the end of March 1942, the
+At first, the Secretary of War Henry Stimson encouraged some families to relocate voluntarily from the West Coast, but starting at the end of March 1942, the
 Wartime Civil Control Administration (WCCA) and War Relocation Authority (WRA)
 were established to remove all remaining Japanese Americans to temporary
 Assembly Centers which were makeshift shelters in close proximity to the
@@ -92,6 +111,11 @@ West Coast as part of a wide-scale program of `deghettoization':
 
 As seen in figure \ref{fig:1940JAmap}, over 90\% of the 1940 Japanese American
 population lived in areas which would become subject to relocation orders.
+This population was overwhelmingly concentrated along the West Coast, particularly in California,
+which was home to large, well-established Japanese American communities,
+many of whom were engaged in farming and small businesses.
+The geographic concentration of this population in economically vital areas near major cities and military installations heightened the perceived security threat,
+prompting their forced relocation.
 
 \subsection{Motivating Literature}\label{motivation}
 
@@ -104,10 +128,10 @@ and less educational attainment
 
 Aside from the importance of understanding the losses to internees, Japanese
 Internment can also serve as an interesting natural experiment through the
-involuntary nature of the experiences of internees. One question asked by
-previous economic literature is the extent that locations in which people live
-affect their economic outcomes such as upward mobility or earnings. It is
-difficult to provide an unbiased causal estimate because households usually
+involuntary nature of the experiences of internees. 
+A key question in previous economic literature is the extent to which 
+geographic location influences economic outcomes, such as upward mobility or earnings.
+It is difficult to provide an unbiased causal estimate because households usually
 have a large degree of choice in where they live. Previous studies have used a
 variety of empirical strategies to separate out this causal effect including
 controlling for observable characteristics like education
@@ -136,9 +160,6 @@ Opportunity Experiment (\cite{ludwig_long-term_2013},
 %   \cite{chan_forced_2022}
 % \end{itemize}
 
-\subsection{Initial Distribution of pre-war Japanese
-Population}\label{initial-distribution-of-pre-war-japanese-population}
-
 \section{Data}\label{data}
 
 I combine historical census data, geographical references, and archived internment camp records to create the final pooled cross-section of county-year-level observations that I use in my later analysis. 
@@ -158,11 +179,9 @@ One issue with comparing migration rates across years using census data is what 
 ``In what place did this person live on April 1, 1935?''
 However, in 1950 this question became
 ``Was [this household member] living in this same county a year ago?''
-before switching back to asking about residence five years ago (instead of one) in all subsequent censuses.
-\footnote{As documented in the IPUMS variable description page: \url{https://usa.ipums.org/usa-action/variables/}}
+before switching back to asking about residence five years ago (instead of one) in all subsequent censuses \footnote{As documented in the IPUMS variable description page: \url{https://usa.ipums.org/usa-action/variables/}}.
 
-Another problem with using 1950 responses to the migration question is that 
-this census only this to `sample line' individuals, not to everyone.
+Another issue with the 1950 migration data is that only ‘sample line’ individuals were surveyed, meaning not everyone was asked about their previous location.
 Only one in every thirty people were asked about their location one year ago
 in 1950 which drastically reduces the number of individuals who for which I can both 
 identify their current county and previous county of residence within the public-use census data.
@@ -212,8 +231,7 @@ Encyclopedia} and I downloaded these records in csv form via the
 Barbed Wires} story project's website
 (\cite{chrkan_behind_2019}, \cite{robinson_war_2023}).
 
-I use the \texttt{sf} package in \texttt{R} to georeference the latitude-longitude coordinates from these records and project them to the same Coordinate Reference System used for the NHGIS shapefiles \citep{pebesma_simple_2018}.
-\footnote{NHGIS uses the Contiguous Albers Equal Area Conic projection.}
+I use the \texttt{sf} package in \texttt{R} to georeference the latitude-longitude coordinates from these records and project them to the same Coordinate Reference System used for the NHGIS shapefiles \citep{pebesma_simple_2018} \footnote{NHGIS uses the Contiguous Albers Equal Area Conic projection.}.
 This allows me to use the \texttt{st\_distance} function to obtain the distance matrix between all county-camp pairs and then select the closest camp to each county and the associated distance for my main independent variable.
 
 Figure \ref{fig:countymap} shows the relationship between the internment camp locations and county boundaries. 
@@ -311,10 +329,10 @@ The dependent variable is the ratio of new migrants into a county who are Japane
 The first row contains the slope estimates for $\beta_1$ in each regression
 and the second row contain the intercept estimates for $\beta_0$.
 
-Before any interment or relocation occurred, there is already a statistically significant negative relationship between proximity to the locations where camps would be built.
+Before any interment or relocation occurred, there is already a statistically significant negative relationship between distance to the locations where camps would be built.
 In column (1), I estimate that a county located 10\% farther away from an interment camp site was already associated with about a .04 percentage point reduction in the proportion of new migrants who are Japanese.
-\footnote{***Percentage point not percent change because the outcome is a ratio?}
-For the set of 91 counties in this regression, that would mean that a county which is 5.64 km farther away from the average county had an additional .4 percentage points in the Japanese migration ratio.
+% \footnote{***Percentage point not percent change because the outcome is a ratio?}
+For the set of 91 counties in this regression, that would mean that a county which is 5.64 km farther away from the average county had .4 percentage points lower Japanese migration ratio.
 
 This correlation decreases in magnitude for later decades, although the point estimates become more precise in later years where more counties are included.
 For the 1950 observations this correlation switches direction, although because of the small sub-sample included for this year, the null hypothesis that this particular estimate is non-zero cannot be rejected at the 95\% confidence level.
@@ -324,57 +342,33 @@ Table \ref{tbl:ezdistreg} includes the indicator variable for a county being loc
 For counties in 1940 outside of where the Evacuation Zone would be established (EZ=0), there is a correlation of about .7 of a percentage point reduction in the ratio of Japanese to total migrants for every 1\% increase in distance away from internment camps.
 However, for counties within the evacuation zone that correlation is only .01 percentage points and positive but not statistically difference from zero.
 Holding distance constant, the difference in this migration ratio between counties within and outside of the EZ was -8.2 percentage points but not significantly distinguishable from zero.
-
-Just like in the previous regression, no statistically significant coefficients can be estimated for in the 1950 regression.
+Just like in the previous regression, there are no statistically significant coefficients in the 1950 regression.
 
 For the two decades 1960 and 1970 post-internment, the negative correlation between distance to camp locations and Japanese migration rates seems to decrease in magnitude but remain significantly negative for counties outside of the EZ.
 However, unlike the 1940 regression, for these two decades the null hypothesis test that the coefficients on both $EZ$ alone and also on the interaction of $EZ$ and Log distance are zero can be rejected.
 This may be due to the larger number of observations available in those regressions, although the significance goes away in the 1980 and 1990 regressions.
 
-Ignoring significance levels, the overall descriptive pattern across all of these years seems to be that counties within the evacuation zone experienced lower rates of Japanese to total migration than non-EZ counties while their distance to nearby camp locations had no effect on these migration rates (with potentially positive effects in 1960 and 1970).
+Ignoring significance levels, the overall descriptive pattern across all of these years seems to be that counties within the evacuation zone experienced lower rates of Japanese to total migration than non-EZ counties while their distance to nearby camp locations had zero or positive effects on these migration rates.
 However, for counties which were never subject to evacuation orders, 
-closer proximity to nearby camps seems to predict higher prevalence of Japanese Americans moving into those counties proportional to all migrants.
+closer proximity to nearby camps seems to predict lower prevalence of Japanese Americans moving into those counties proportional to all migrants.
 
-\section{Discussion}\label{discussion}
+\section{Conclusion}\label{conclusion}
 
-My results from the analysis of Japanese Americans' migrations from 1940 to 1990 
-point to a few general patterns related to the geography of this population's internment during World War II.
-I first document well-known general pattern from before the war 
-that the vast majority of mainland Japanese Americans lived along the West Coast 
-and that the WRA camps were placed closer to areas which already had higher rates of Japanese migrations relative to total migrations.
-While the WRA's objective was to move the West Coast Japanese population away from population centers and military targets,
-the selection of the ten locations chosen for the interment camps was likely limited by the higher transportation costs associated with relocating internees farther away from the West Coast.
-The statistically significant and negative correlation which appears in the 1940 column of both table \ref{tbl:distreg} and table \ref{tbl:ezdistreg}
-likely is due to this endogenous spatial proximity between the existing 1940 Japanese population and the internment camp locations.
+The central goal of this paper was to determine whether proximity to internment camps had a lasting effect on Japanese American migration patterns. The findings show a persistent negative correlation between camp proximity and Japanese American migration ratios up to 1990, with counties closer to camps generally experiencing higher migration rates among Japanese Americans, especially in the decades immediately following internment. This supports the hypothesis that camp proximity played a role in shaping long-term resettlement patterns.
 
-I compare the results of estimating equation \ref{eq:basicreg} across years
-and find that for the post-interment years from 1960 to 1990,
-there is a persistent but decreasing negative correlation between the distance to 
-former internment camp sites and the degree to which Japanese Americans were moving 
-into those counties over time.
-This correlation is strongest in the pre-internment year 1940, where at the average levels of migration and distance,
-a coefficient of -0.411 would mean that a county which is 5.64 km closer to an internment camp than average would be expected to see an additional 
+The analysis of Japanese American migration from 1940 to 1990 highlights several key patterns related to the geography of internment during World War II. Before the war, most mainland Japanese Americans were concentrated along the West Coast, and the WRA internment camps were established in areas that already had relatively higher rates of Japanese migration. While the WRA's goal was to disperse the West Coast Japanese population, the selection of camp locations was likely influenced by logistical factors, such as transportation costs, which kept the camps closer to existing Japanese communities. This accounts for the negative correlation observed in 1940 between proximity to camps and Japanese migration.
 
-As I discuss in section \ref{population-and-migration}, 
-because only sample-line individuals were asked about their migrations in 1950
-my 1950 sample of counties with measurable migration ratios is too small 
-to detect any meaningful results.
-Because this census was conducted only a few years after the end of internment,
-it is unclear whether the opposite signs of the coefficients reported in the 1950 columns 
-are due to noise or whether this reflects some actual short-term adjustment of 
-Japanese American migration patterns caused by relocation and internment.
-With the recently released full-count 1950 census data, it could be possible to gather more data to test the hypothesis that 1950 migrations by Japanese Americans were systematically different than other years,
-although even that sample still suffers from the problems of sample-line individuals and asking about one year instead of five.
+From 1960 to 1990, the data show a persistent, though gradually decreasing, negative correlation between distance from former camp sites and Japanese American migration rates. This suggests that even decades after internment, camp proximity continued to influence resettlement patterns, though the effect weakened over time. In 1940, the correlation was strongest, with counties closer to camps seeing significantly higher Japanese migration rates, while by 1990, the effect was less pronounced.
 
-% ***
-% \begin{itemize}
-%     \item difference between EZ and non-EZ effects
-%     \item relate back to lit
-%     \begin{itemize}
-%         \item \cite{shoag_causal_2016}
-%         \item \cite{chan_forced_2022}
-%     \end{itemize}
-% \end{itemize}
+A notable limitation of the 1950 data is that migration questions were only asked to sample-line individuals, reducing the sample size and limiting the ability to detect meaningful patterns. While the full-count 1950 census data offers an opportunity to further explore Japanese American migration in this critical post-war period, challenges remain in interpreting these results due to the limited scope of the migration questions asked.
+
+The comparison of migration patterns between counties inside and outside the Evacuation Zone reveals that internment did not entirely prevent Japanese Americans from returning to West Coast cities. Despite the WRA’s relocation efforts, many Japanese Americans continued to migrate back to larger coastal cities, a pattern that persisted through the 1970s. However, in non-West Coast counties, the relationship between camp proximity and Japanese migration was reversed and similarly persistent.
+
+These findings underscore the long-lasting demographic effects of the U.S. government's forced relocation policies. The proximity of internment camps influenced resettlement patterns for decades, demonstrating that displacement policies can have enduring consequences on population distribution.
+
+While previous studies have focused on the individual-level economic and social impacts of internment, this paper expands the discussion to county-level migration patterns. It provides new insights into how forced displacement shapes migration behavior not only in the immediate aftermath but for many years thereafter.
+
+One limitation of this study is its reliance on census data, which may underrepresent smaller, rural counties due to sampling limitations. Furthermore, while the analysis attempts to account for the endogenous placement of internment camps, unobserved factors such as local economic conditions or social networks may also have played a role in shaping migration patterns. Future research could investigate these variables to gain a more comprehensive understanding of the factors influencing long-term migration behavior.
 
 \newpage
 
